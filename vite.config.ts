@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { createMiddleware } from './api/middleware';
+import { createMiddleware } from './server/middleware';
 
 export default defineConfig({
   plugins: [

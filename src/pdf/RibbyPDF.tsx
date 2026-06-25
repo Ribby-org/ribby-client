@@ -1,6 +1,6 @@
 import { Document, Page, Text, View, StyleSheet, pdf } from '@react-pdf/renderer';
 import type { ScanResult, ScanType, Finding } from '../types/scan';
-import type { RepoScanResult, RepoFinding } from '../../api/scanners/repo';
+import type { RepoScanResult, RepoFinding } from '../../server/scanners/repo';
 
 // ── Brand colors ──────────────────────────────────────────────────────────────
 const B = {
