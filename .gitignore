@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment variables — NEVER commit these
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+.env.*.local
+
+# Supabase local config (contains service role key)
+supabase/.temp/
+supabase/config.toml
+.supabase/
+
+# Private keys & secrets
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_rsa.pub
+*.cert
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Cache
+.eslintcache
+.cache/
