@@ -39,7 +39,7 @@ export function useGitHubRepos(orgId: string | undefined) {
       provider: 'github',
       options: {
         scopes: 'repo read:user',
-        redirectTo: `${window.location.origin}/org/${orgId}/repo`
+        redirectTo: window.location.origin
       }
     });
   };
