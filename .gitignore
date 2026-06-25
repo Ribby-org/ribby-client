@@ -12,9 +12,8 @@ dist/
 .env.staging
 .env.*.local
 
-# Supabase local config (contains service role key)
-supabase/.temp/
-supabase/config.toml
+# Supabase — entire folder (migrations, config, temp)
+supabase/
 .supabase/
 
 # Private keys & secrets
