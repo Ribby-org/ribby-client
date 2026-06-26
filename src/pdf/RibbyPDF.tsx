@@ -1,6 +1,6 @@
 import { Document, Page, Text, View, StyleSheet, pdf } from '@react-pdf/renderer';
 import type { ScanResult, ScanType, Finding } from '../types/scan';
-import type { RepoScanResult, RepoFinding } from '../../server/scanners/repo';
+import type { RepoScanResult, RepoFinding } from '../../../server/scanners/repo';
 
 // ── Brand colors ──────────────────────────────────────────────────────────────
 const B = {
@@ -370,7 +370,7 @@ export function RepoScanPDF({ result }: { result: RepoScanResult }) {
           </View>
 
           {categories.map(({ key, label }) => {
-            const findings = result.findings.filter(f => f.category === key);
+            const findings = result.findings.filter((f: RepoFinding) => f.category === key);
             if (!findings.length) return null;
             return (
               <View key={key} style={s.section}>
@@ -378,7 +378,7 @@ export function RepoScanPDF({ result }: { result: RepoScanResult }) {
                   <Text style={s.sectionTitle}>{label}</Text>
                   <Text style={[s.sectionScore, { color: B.midGray }]}>{findings.length} finding{findings.length !== 1 ? 's' : ''}</Text>
                 </View>
-                {findings.map(f => <FindingCard key={f.id} f={f} />)}
+                {findings.map((f: RepoFinding) => <FindingCard key={f.id} f={f} />)}
               </View>
             );
           })}
