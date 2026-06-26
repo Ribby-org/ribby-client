@@ -8,7 +8,7 @@ export default defineConfig(({ command }) => ({
     command === 'serve' && {
       name: 'ribby-scanner-api',
       async configureServer(server: any) {
-        const { createMiddleware } = await import('../server/middleware');
+        const { createMiddleware } = await import(/* @vite-ignore */ '../server/middleware');
         server.middlewares.use(createMiddleware());
       }
     }
