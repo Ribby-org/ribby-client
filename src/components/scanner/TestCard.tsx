@@ -5,6 +5,7 @@ import type { ScanResult, ScanType } from '../../types/scan';
 import FindingCard from '../results/FindingCard';
 import ScoreRing from '../results/ScoreRing';
 import { useScans } from '../../hooks/useScans';
+import { apiUrl } from '../../utils/api';
 
 interface TestCardProps {
   url: string;
@@ -46,12 +47,12 @@ export default function TestCard({ url, type, title, description, icon: Icon, ic
     setExpanded(false);
 
     try {
-      const { data } = await axios.post('/api/scan/start', { url, type });
+      const { data } = await axios.post(apiUrl('/api/scan/start'), { url, type });
       const id: string = data.id;
 
       const poll = setInterval(async () => {
         try {
-          const { data: scan } = await axios.get<ScanResult>(`/api/scan/${id}`);
+          const { data: scan } = await axios.get<ScanResult>(apiUrl(`/api/scan/${id}`));
           setProgress(scan.progress);
           if (scan.status === 'complete' || scan.status === 'error') {
             clearInterval(poll);

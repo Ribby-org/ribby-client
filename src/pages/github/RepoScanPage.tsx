@@ -7,11 +7,12 @@ import {
 } from 'lucide-react';
 import { downloadRepoReport } from '../../pdf/RibbyPDF';
 import axios from 'axios';
+import { apiUrl } from '../../utils/api';
 import { useAuth } from '../../hooks/useAuth';
 import { useGitHubRepos, type GitHubRepo } from '../../hooks/github/useGitHubRepos';
 import { useRepoScans, type DbRepoScan } from '../../hooks/github/useRepoScans';
 import { supabase } from '../../utils/supabase';
-import type { RepoScanResult, RepoFinding } from '../../../server/scanners/repo';
+import type { RepoScanResult, RepoFinding } from '../../../../server/scanners/repo';
 
 // ── Finding detail ────────────────────────────────────────────────────────────
 const CAT_META: Record<RepoFinding['category'], { label: string; icon: typeof Shield; color: string; bg: string }> = {
@@ -324,12 +325,12 @@ export default function RepoScanPage() {
       // Send GitHub token for authenticated API calls (5000 req/hr vs 60)
       const { data: session } = await supabase.auth.getSession();
       const githubToken = session.session?.provider_token ?? undefined;
-      const { data } = await axios.post('/api/repo-scan/start', { repoUrl, githubToken });
+      const { data } = await axios.post(apiUrl('/api/repo-scan/start'), { repoUrl, githubToken });
       const id: string = data.id;
 
       const poll = setInterval(async () => {
         try {
-          const { data: result } = await axios.get<RepoScanResult>(`/api/repo-scan/${id}`);
+          const { data: result } = await axios.get<RepoScanResult>(apiUrl(`/api/repo-scan/${id}`));
           if (result.status === 'complete' || result.status === 'error') {
             clearInterval(poll);
             setScanningUrl(null);
