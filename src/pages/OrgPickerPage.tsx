@@ -23,10 +23,10 @@ export default function OrgPickerPage({ onCreateNew }: OrgPickerPageProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top bar */}
-      <div className="border-b border-gray-200 bg-white px-6 py-4 flex items-center justify-between">
+      <div className="border-b border-gray-200 bg-white px-4 sm:px-6 py-4 flex items-center justify-between">
         <span className="font-bold text-gray-900 tracking-tight text-lg">Ribby</span>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2">
             {avatar ? (
               <img src={avatar} alt={name} className="w-7 h-7 rounded-full ring-1 ring-gray-200" />
             ) : (
@@ -34,27 +34,27 @@ export default function OrgPickerPage({ onCreateNew }: OrgPickerPageProps) {
                 <span className="text-xs font-medium text-gray-600">{name.charAt(0).toUpperCase()}</span>
               </div>
             )}
-            <span className="text-sm text-gray-700 font-medium">{name}</span>
+            <span className="hidden sm:block text-sm text-gray-700 font-medium truncate max-w-[140px]">{name}</span>
           </div>
           <button
             onClick={signOut}
             className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-red-500 transition-colors px-2 py-1.5 rounded-lg hover:bg-red-50"
           >
             <LogOut size={13} />
-            Sign out
+            <span className="hidden sm:inline">Sign out</span>
           </button>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-3xl mx-auto px-6 py-12">
-        <div className="flex items-center justify-between mb-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Your organizations</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Your organizations</h1>
             <p className="text-sm text-gray-400 mt-1">Select an organization to continue</p>
           </div>
           {organizations.length < 20 && (
-            <button onClick={onCreateNew} className="btn-primary">
+            <button onClick={onCreateNew} className="btn-primary self-start sm:self-auto">
               <Plus size={15} /> New Organization
             </button>
           )}
