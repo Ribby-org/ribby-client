@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '../../utils/supabase';
-import type { RepoFinding } from '../../../../server/scanners/repo';
+import type { RepoFinding } from '../../types/repo';
 
 export interface DbRepoScan {
   id: string;

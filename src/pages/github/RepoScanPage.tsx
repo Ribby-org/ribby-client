@@ -12,7 +12,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useGitHubRepos, type GitHubRepo } from '../../hooks/github/useGitHubRepos';
 import { useRepoScans, type DbRepoScan } from '../../hooks/github/useRepoScans';
 import { supabase } from '../../utils/supabase';
-import type { RepoScanResult, RepoFinding } from '../../../../server/scanners/repo';
+import type { RepoScanResult, RepoFinding } from '../../types/repo';
 
 // ── Finding detail ────────────────────────────────────────────────────────────
 const CAT_META: Record<RepoFinding['category'], { label: string; icon: typeof Shield; color: string; bg: string }> = {
