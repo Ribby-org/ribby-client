@@ -23,7 +23,7 @@ export default function SummaryStats({ scan }: SummaryStatsProps) {
   const sevs = ['critical', 'high', 'medium', 'low', 'info'] as const;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-5">
       {/* Score */}
       <div className="card p-5 flex items-center gap-5">
         <ScoreRing score={summary.score} size={90} />

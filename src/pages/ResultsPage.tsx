@@ -7,6 +7,8 @@ import ScanProgress from '../components/scanner/ScanProgress';
 import SummaryStats from '../components/results/SummaryStats';
 import CategoryTabs from '../components/results/CategoryTabs';
 import FindingCard from '../components/results/FindingCard';
+import { useBugReports, type BugReportDraft } from '../hooks/useBugReports';
+import BugModal from '../components/bugs/BugModal';
 
 function buildEmail(scan: ScanResult): string {
   const top3 = scan.findings.slice(0, 3);
@@ -36,6 +38,10 @@ export default function ResultsPage() {
   const [fetchError, setFetchError] = useState('');
   const [activeTab, setActiveTab] = useState<Category | 'all'>('all');
   const [copied, setCopied] = useState(false);
+  const [bugDraft, setBugDraft] = useState<BugReportDraft | null>(null);
+  const [savingBug, setSavingBug] = useState(false);
+  const { orgId } = useParams<{ id: string; orgId?: string }>();
+  const { createBug } = useBugReports(orgId);
 
   const fetchScan = useCallback(async () => {
     if (!id) return;
@@ -63,6 +69,27 @@ export default function ResultsPage() {
     poll();
     return () => clearInterval(iv);
   }, [fetchScan]);
+
+  const handleReport = (finding: Finding) => {
+    setBugDraft({
+      title:       finding.title,
+      url:         scan?.url ?? '',
+      severity:    finding.severity,
+      status:      'open',
+      description: finding.description,
+      steps:       '',
+      expected:    '',
+      actual:      finding.recommendation ? `Fix needed: ${finding.recommendation}` : '',
+      category:    finding.category,
+    });
+  };
+
+  const handleSaveBug = async (draft: BugReportDraft) => {
+    setSavingBug(true);
+    await createBug(draft);
+    setSavingBug(false);
+    setBugDraft(null);
+  };
 
   const handleCopy = () => {
     if (!scan) return;
@@ -115,21 +142,22 @@ export default function ResultsPage() {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-4 md:p-6 max-w-4xl mx-auto pb-24 md:pb-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2.5">
-          <div>
-            <h1 className="text-sm font-semibold text-gray-900">Scan Results</h1>
-            <p className="text-xs text-gray-400 font-mono mt-0.5 max-w-xs truncate">{scan.url}</p>
-          </div>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <div>
+          <h1 className="text-sm font-semibold text-gray-900">Scan Results</h1>
+          <p className="text-xs text-gray-400 font-mono mt-0.5 max-w-[200px] sm:max-w-xs truncate">{scan.url}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <button onClick={() => navigate('/')} className="btn-ghost">
             <RefreshCw size={13} /> New scan
           </button>
           <button onClick={handleCopy} className="btn-primary">
-            {copied ? <><Check size={13} />Copied</> : <><Copy size={13} />Copy outreach email</>}
+            {copied
+              ? <><Check size={13} /><span>Copied</span></>
+              : <><Copy size={13} /><span className="hidden sm:inline">Copy outreach email</span><span className="sm:hidden">Copy</span></>
+            }
           </button>
         </div>
       </div>
@@ -144,13 +172,22 @@ export default function ResultsPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {filtered.map((f, i) => <FindingCard key={f.id} finding={f} index={i} />)}
+          {filtered.map((f, i) => <FindingCard key={f.id} finding={f} index={i} onReport={handleReport} />)}
         </div>
       )}
 
       <p className="mt-6 text-center text-xs text-gray-300 font-mono">
         Scanned {new Date(scan.startedAt).toLocaleString()} · {scan.summary.total} issues found
       </p>
+
+      {bugDraft && (
+        <BugModal
+          initial={bugDraft}
+          onSave={handleSaveBug}
+          onClose={() => setBugDraft(null)}
+          saving={savingBug}
+        />
+      )}
     </div>
   );
 }

@@ -6,7 +6,7 @@ import ScanHubPage from './pages/ScanHubPage';
 import HistoryPage from './pages/HistoryPage';
 import RepoScanPage from './pages/github/RepoScanPage';
 import AuditPage from './pages/AuditPage';
-import AnalyticsPage from './pages/AnalyticsPage';
+import BugReportsPage from './pages/BugReportsPage';
 import LoginPage from './pages/auth/LoginPage';
 import OnboardingPage from './pages/onboarding/OnboardingPage';
 import OrgPickerPage from './pages/OrgPickerPage';
@@ -78,7 +78,7 @@ export default function App() {
                   <Route path="scanner"   element={<HomePage />} />
                   <Route path="hub"       element={<ScanHubPage />} />
                   <Route path="audit"     element={<AuditPage />} />
-                  <Route path="analytics" element={<AnalyticsPage />} />
+                  <Route path="bugs"      element={<BugReportsPage />} />
                   <Route path="repo"      element={<RepoScanPage />} />
                   <Route path="history"   element={<HistoryPage />} />
                   <Route path="*"         element={<Navigate to="scanner" replace />} />

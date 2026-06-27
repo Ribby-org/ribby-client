@@ -1,5 +1,5 @@
 import { NavLink, useNavigate, useParams } from 'react-router-dom';
-import { History, ScanLine, LogOut, X, ChevronLeft, Building2, Github, ClipboardList, BarChart3 } from 'lucide-react';
+import { History, ScanLine, LogOut, X, ChevronLeft, Building2, Github, ClipboardList, Bug } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useOrganization } from '../../hooks/useOrganization';
 
@@ -21,8 +21,8 @@ export default function Sidebar({ onClose }: SidebarProps) {
     {
       label: 'Web Scanner',
       items: [
-        { to: `/org/${orgId}/scanner`,   icon: ScanLine,     label: 'Scanner' },
-        { to: `/org/${orgId}/audit`,     icon: ClipboardList, label: 'Site Audit' }
+        { to: `/org/${orgId}/scanner`,   icon: ScanLine,      label: 'Scanner' },
+        { to: `/org/${orgId}/audit`,     icon: ClipboardList, label: 'Site Audit' },
       ]
     },
     {
@@ -32,9 +32,9 @@ export default function Sidebar({ onClose }: SidebarProps) {
       ]
     },
     {
-      label: 'Analytics',
+      label: 'QA',
       items: [
-        { to: `/org/${orgId}/analytics`, icon: BarChart3, label: 'Analytics' }
+        { to: `/org/${orgId}/bugs`, icon: Bug, label: 'Bug Reports' }
       ]
     },
     {

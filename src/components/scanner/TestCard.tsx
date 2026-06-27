@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { LucideIcon, Play, Loader2, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
 import axios from 'axios';
-import type { ScanResult, ScanType } from '../../types/scan';
+import type { ScanResult, ScanType, Finding } from '../../types/scan';
 import FindingCard from '../results/FindingCard';
 import ScoreRing from '../results/ScoreRing';
 import { useScans } from '../../hooks/useScans';
+import { useBugReports, type BugReportDraft } from '../../hooks/useBugReports';
+import BugModal from '../bugs/BugModal';
 import { apiUrl } from '../../utils/api';
 
 interface TestCardProps {
@@ -37,7 +39,31 @@ export default function TestCard({ url, type, title, description, icon: Icon, ic
   const [result, setResult] = useState<ScanResult | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [bugDraft, setBugDraft] = useState<BugReportDraft | null>(null);
+  const [savingBug, setSavingBug] = useState(false);
   const { saveScan } = useScans(orgId);
+  const { createBug } = useBugReports(orgId);
+
+  const handleReport = (finding: Finding) => {
+    setBugDraft({
+      title:       finding.title,
+      url,
+      severity:    finding.severity,
+      status:      'open',
+      description: finding.description,
+      steps:       '',
+      expected:    '',
+      actual:      finding.recommendation ? `Fix needed: ${finding.recommendation}` : '',
+      category:    finding.category,
+    });
+  };
+
+  const handleSaveBug = async (draft: BugReportDraft) => {
+    setSavingBug(true);
+    await createBug(draft);
+    setSavingBug(false);
+    setBugDraft(null);
+  };
 
   const run = async () => {
     setState('running');
@@ -190,9 +216,18 @@ export default function TestCard({ url, type, title, description, icon: Icon, ic
       {expanded && result && result.findings.length > 0 && (
         <div className="border-t border-gray-100 bg-gray-50/50 px-4 pb-4 pt-3 space-y-2">
           {result.findings.map((f, i) => (
-            <FindingCard key={f.id} finding={f} index={i} />
+            <FindingCard key={f.id} finding={f} index={i} onReport={handleReport} />
           ))}
         </div>
+      )}
+
+      {bugDraft && (
+        <BugModal
+          initial={bugDraft}
+          onSave={handleSaveBug}
+          onClose={() => setBugDraft(null)}
+          saving={savingBug}
+        />
       )}
     </div>
   );

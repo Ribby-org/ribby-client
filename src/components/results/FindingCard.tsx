@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { ChevronDown, MapPin, Lightbulb } from 'lucide-react';
+import { ChevronDown, MapPin, Lightbulb, Bug } from 'lucide-react';
 import { Finding } from '../../types/scan';
 
 interface FindingCardProps {
   finding: Finding;
   index: number;
+  onReport?: (finding: Finding) => void;
 }
 
 const BADGE: Record<string, string> = {
@@ -23,7 +24,7 @@ const DOT: Record<string, string> = {
   info: 'bg-blue-500'
 };
 
-export default function FindingCard({ finding, index }: FindingCardProps) {
+export default function FindingCard({ finding, index, onReport }: FindingCardProps) {
   const [open, setOpen] = useState(index < 2);
 
   return (
@@ -67,6 +68,15 @@ export default function FindingCard({ finding, index }: FindingCardProps) {
             </div>
             <p className="text-xs text-gray-600 leading-relaxed">{finding.recommendation}</p>
           </div>
+
+          {onReport && (
+            <button
+              onClick={() => onReport(finding)}
+              className="flex items-center gap-1.5 text-xs text-red-500 hover:text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded-lg border border-red-100 transition-colors w-fit"
+            >
+              <Bug size={12} /> Report Bug
+            </button>
+          )}
         </div>
       )}
     </div>
