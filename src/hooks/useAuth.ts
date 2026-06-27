@@ -14,9 +14,10 @@ export function useAuth() {
       setLoading(false);
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+
     });
 
     return () => listener.subscription.unsubscribe();

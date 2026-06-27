@@ -7,7 +7,7 @@ import ScoreRing from '../results/ScoreRing';
 import { useScans } from '../../hooks/useScans';
 import { useBugReports, type BugReportDraft } from '../../hooks/useBugReports';
 import BugModal from '../bugs/BugModal';
-import { apiUrl } from '../../utils/api';
+import { apiUrl, apiHeaders } from '../../utils/api';
 
 interface TestCardProps {
   url: string;
@@ -73,12 +73,12 @@ export default function TestCard({ url, type, title, description, icon: Icon, ic
     setExpanded(false);
 
     try {
-      const { data } = await axios.post(apiUrl('/api/scan/start'), { url, type });
+      const { data } = await axios.post(apiUrl('/api/scan/start'), { url, type }, { headers: apiHeaders() });
       const id: string = data.id;
 
       const poll = setInterval(async () => {
         try {
-          const { data: scan } = await axios.get<ScanResult>(apiUrl(`/api/scan/${id}`));
+          const { data: scan } = await axios.get<ScanResult>(apiUrl(`/api/scan/${id}`), { headers: apiHeaders() });
           setProgress(scan.progress);
           if (scan.status === 'complete' || scan.status === 'error') {
             clearInterval(poll);
@@ -108,7 +108,7 @@ export default function TestCard({ url, type, title, description, icon: Icon, ic
     BORDER.idle;
 
   return (
-    <div className={`bg-white border ${borderClass} rounded-xl shadow-sm overflow-hidden transition-colors duration-300`}>
+    <div className="rounded-xl overflow-hidden transition-colors duration-300" style={{ backgroundColor: '#231f35' }}>
 
       {/* Top section */}
       <div className="p-5">
@@ -126,7 +126,7 @@ export default function TestCard({ url, type, title, description, icon: Icon, ic
 
         {/* Score ring: full width row when done */}
         {state === 'done' && result && (
-          <div className="flex items-center gap-4 py-3 px-1 border-t border-b border-gray-100 my-3">
+          <div className="flex items-center gap-4 py-3 px-1 my-3" style={{ borderTop: '1px solid #2e2a42', borderBottom: '1px solid #2e2a42' }}>
             <ScoreRing score={result.summary.score} size={64} />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-gray-400 mb-1.5">Issues found</p>
@@ -152,9 +152,9 @@ export default function TestCard({ url, type, title, description, icon: Icon, ic
               { label: 'P95 latency', value: `${result.loadStats.p95Time}ms` },
               { label: 'Success rate', value: `${result.loadStats.successRate}%` }
             ].map(({ label, value }) => (
-              <div key={label} className="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-center">
-                <p className="text-[10px] text-gray-400 uppercase tracking-wide leading-none mb-1">{label}</p>
-                <p className="text-sm font-semibold text-gray-800">{value}</p>
+              <div key={label} className="rounded-lg px-3 py-2.5 text-center" style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid #2e2a42' }}>
+                <p className="text-[10px] uppercase tracking-wide leading-none mb-1" style={{ color: '#6b6880' }}>{label}</p>
+                <p className="text-sm font-semibold" style={{ color: '#ede9ff' }}>{value}</p>
               </div>
             ))}
           </div>
@@ -170,9 +170,9 @@ export default function TestCard({ url, type, title, description, icon: Icon, ic
               </span>
               <span className="tabular-nums">{progress}%</span>
             </div>
-            <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: '#2e2a42' }}>
               <div
-                className="h-full bg-blue-600 rounded-full transition-all duration-500 ease-out"
+                className="h-full bg-violet-600 rounded-full transition-all duration-500 ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -181,7 +181,7 @@ export default function TestCard({ url, type, title, description, icon: Icon, ic
 
         {/* Error message */}
         {state === 'error' && (
-          <div className="mt-1 mb-3 text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+          <div className="mt-1 mb-3 text-xs rounded-lg px-3 py-2" style={{ color: '#f87171', backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
             {errorMsg}
           </div>
         )}
@@ -214,7 +214,7 @@ export default function TestCard({ url, type, title, description, icon: Icon, ic
 
       {/* Findings list */}
       {expanded && result && result.findings.length > 0 && (
-        <div className="border-t border-gray-100 bg-gray-50/50 px-4 pb-4 pt-3 space-y-2">
+        <div className="px-4 pb-4 pt-3 space-y-2" style={{ borderTop: '1px solid #2e2a42' }}>
           {result.findings.map((f, i) => (
             <FindingCard key={f.id} finding={f} index={i} onReport={handleReport} />
           ))}

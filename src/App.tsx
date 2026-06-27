@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import HomePage from './pages/HomePage';
 import ScanHubPage from './pages/ScanHubPage';
@@ -15,10 +15,23 @@ import { useOrganization } from './hooks/useOrganization';
 
 function Spinner() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+    <div className="min-h-screen bg-app flex items-center justify-center">
+      <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
     </div>
   );
+}
+
+// Handles returning to the page the user was on before GitHub OAuth
+function OAuthReturn() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const returnPath = localStorage.getItem('ribby_oauth_return');
+    if (returnPath) {
+      localStorage.removeItem('ribby_oauth_return');
+      navigate(returnPath, { replace: true });
+    }
+  }, [navigate]);
+  return null;
 }
 
 // Guard: ensures the org in the URL belongs to the current user
@@ -61,6 +74,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <OAuthReturn />
       <Routes>
         {/* Org picker */}
         <Route

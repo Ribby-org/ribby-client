@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { downloadRepoReport } from '../../pdf/RibbyPDF';
 import axios from 'axios';
-import { apiUrl } from '../../utils/api';
+import { apiUrl, apiHeaders } from '../../utils/api';
 import { useAuth } from '../../hooks/useAuth';
 import { useGitHubRepos, type GitHubRepo } from '../../hooks/github/useGitHubRepos';
 import { useRepoScans, type DbRepoScan } from '../../hooks/github/useRepoScans';
@@ -63,7 +63,8 @@ function FindingRow({ finding, index }: { finding: RepoFinding; index: number })
 // ── Severity circles ──────────────────────────────────────────────────────────
 function SevDot({ n, ring }: { n: number; ring: string }) {
   return (
-    <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-semibold border ${n > 0 ? ring : 'bg-white text-gray-400 border-gray-200'}`}>
+    <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-semibold border ${n > 0 ? ring : 'text-[#4e4b60] border-[#2e2a42]'}`}
+      style={n === 0 ? { backgroundColor: '#1d1a2b' } : undefined}>
       {n}
     </span>
   );
@@ -83,48 +84,53 @@ function RepoTableRow({
 
   return (
     <>
-      <tr className="border-b border-gray-100 hover:bg-gray-50/60 transition-colors">
+      <tr className="transition-colors" style={{ borderBottom: '1px solid #2e2a42' }}
+        onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)')}
+        onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
         {/* Repo name */}
         <td className="px-5 py-3.5">
           <div className="flex items-center gap-2">
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
                 <a href={repo.html_url} target="_blank" rel="noreferrer"
-                  className="text-sm font-medium text-gray-800 hover:text-blue-600 transition-colors truncate"
+                  className="text-sm font-medium hover:text-blue-400 transition-colors truncate"
+                  style={{ color: '#ede9ff' }}
                   onClick={e => e.stopPropagation()}
                 >
                   {repo.name}
                 </a>
                 {repo.private ? (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 border border-amber-200 flex-shrink-0">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded flex-shrink-0"
+                    style={{ backgroundColor: 'rgba(217,119,6,0.15)', color: '#fbbf24', border: '1px solid rgba(217,119,6,0.3)' }}>
                     <Lock size={9} /> Private
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-blue-50 text-blue-500 border border-blue-100 flex-shrink-0">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded flex-shrink-0"
+                    style={{ backgroundColor: 'rgba(59,130,246,0.12)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.25)' }}>
                     <Globe size={9} /> Public
                   </span>
                 )}
               </div>
               {repo.description && (
-                <p className="text-[11px] text-gray-400 truncate max-w-xs">{repo.description}</p>
+                <p className="text-[11px] truncate max-w-xs" style={{ color: '#6b6880' }}>{repo.description}</p>
               )}
             </div>
           </div>
         </td>
 
         {/* Language */}
-        <td className="px-5 py-3.5 text-sm text-gray-500 whitespace-nowrap">
-          {repo.language ?? <span className="text-gray-300">—</span>}
+        <td className="px-5 py-3.5 text-sm whitespace-nowrap" style={{ color: '#9390aa' }}>
+          {repo.language ?? <span style={{ color: '#4e4b60' }}>—</span>}
         </td>
 
         {/* Issues */}
         <td className="px-5 py-3.5">
           {s ? (
             <div className="flex items-center gap-1.5">
-              <SevDot n={s.critical} ring="bg-red-50 text-red-600 border-red-200" />
-              <SevDot n={s.high}     ring="bg-orange-50 text-orange-600 border-orange-200" />
-              <SevDot n={s.medium}   ring="bg-amber-50 text-amber-600 border-amber-200" />
-              <SevDot n={s.low}      ring="bg-green-50 text-green-600 border-green-200" />
+              <SevDot n={s.critical} ring="bg-red-950/60 text-red-400 border-red-800" />
+              <SevDot n={s.high}     ring="bg-orange-950/60 text-orange-400 border-orange-800" />
+              <SevDot n={s.medium}   ring="bg-amber-950/60 text-amber-400 border-amber-800" />
+              <SevDot n={s.low}      ring="bg-green-950/60 text-green-400 border-green-800" />
             </div>
           ) : (
             <span className="text-xs text-gray-400 italic">Not scanned</span>
@@ -132,10 +138,10 @@ function RepoTableRow({
         </td>
 
         {/* Last scan */}
-        <td className="px-5 py-3.5 text-xs text-gray-400 whitespace-nowrap">
+        <td className="px-5 py-3.5 text-xs whitespace-nowrap" style={{ color: '#6b6880' }}>
           {dbScan?.completed_at
             ? new Date(dbScan.completed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-            : <span className="text-gray-300">—</span>
+            : <span style={{ color: '#4e4b60' }}>—</span>
           }
         </td>
 
@@ -146,12 +152,13 @@ function RepoTableRow({
               onClick={() => onScan(repo)}
               disabled={scanning}
               className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full whitespace-nowrap transition-all duration-150 ${
-                scanning
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : dbScan
-                  ? 'bg-gray-100 hover:bg-blue-50 text-gray-600 hover:text-blue-600 border border-gray-200'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-              }`}
+                scanning ? 'cursor-not-allowed' : ''
+              } ${!dbScan && !scanning ? 'bg-violet-700 hover:bg-violet-800 text-white' : ''}`}
+              style={scanning
+                ? { backgroundColor: 'rgba(255,255,255,0.06)', color: '#6b6880' }
+                : dbScan
+                ? { backgroundColor: 'rgba(255,255,255,0.06)', color: '#9390aa', border: '1px solid #2e2a42' }
+                : undefined}
             >
               {scanning
                 ? <><Loader2 size={11} className="animate-spin" /> Scanning…</>
@@ -164,7 +171,7 @@ function RepoTableRow({
             {dbScan && dbScan.findings.length > 0 && (
               <button
                 onClick={() => setExpanded(!expanded)}
-                className="text-xs text-blue-600 hover:text-blue-800 font-medium whitespace-nowrap underline underline-offset-2"
+                className="text-xs text-blue-400 hover:text-blue-300 font-medium whitespace-nowrap underline underline-offset-2"
               >
                 {expanded ? 'Hide' : `${dbScan.findings.length} findings`}
               </button>
@@ -173,7 +180,8 @@ function RepoTableRow({
             {dbScan && (
               <button
                 onClick={() => downloadRepoReport(dbScan as unknown as RepoScanResult)}
-                className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                className="p-1.5 rounded-md transition-colors"
+                style={{ color: '#6b6880' }}
                 title="Download PDF report"
               >
                 <Download size={13} />
@@ -185,8 +193,8 @@ function RepoTableRow({
 
       {/* Expanded findings */}
       {expanded && dbScan && (
-        <tr className="border-b border-gray-100">
-          <td colSpan={5} className="px-5 py-4 bg-gray-50/60">
+        <tr style={{ borderBottom: '1px solid #2e2a42' }}>
+          <td colSpan={5} className="px-5 py-4" style={{ backgroundColor: 'rgba(255,255,255,0.02)' }}>
             <div className="space-y-2 max-h-80 overflow-y-auto">
               {dbScan.findings.map((f, i) => <FindingRow key={f.id} finding={f} index={i} />)}
             </div>
@@ -234,7 +242,7 @@ function RepoMobileCard({ repo, dbScan, onScan, scanning }: {
           className={`flex-shrink-0 flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-all ${
             scanning ? 'bg-gray-100 text-gray-400' :
             dbScan ? 'bg-gray-100 hover:bg-blue-50 text-gray-600 hover:text-blue-600' :
-            'bg-blue-600 hover:bg-blue-700 text-white'
+            'bg-violet-700 hover:bg-violet-800 text-white'
           }`}
         >
           {scanning ? <Loader2 size={11} className="animate-spin" /> : dbScan ? <RefreshCw size={11} /> : <Play size={11} />}
@@ -325,12 +333,12 @@ export default function RepoScanPage() {
       // Send GitHub token for authenticated API calls (5000 req/hr vs 60)
       const { data: session } = await supabase.auth.getSession();
       const githubToken = session.session?.provider_token ?? undefined;
-      const { data } = await axios.post(apiUrl('/api/repo-scan/start'), { repoUrl, githubToken });
+      const { data } = await axios.post(apiUrl('/api/repo-scan/start'), { repoUrl, githubToken }, { headers: apiHeaders() });
       const id: string = data.id;
 
       const poll = setInterval(async () => {
         try {
-          const { data: result } = await axios.get<RepoScanResult>(apiUrl(`/api/repo-scan/${id}`));
+          const { data: result } = await axios.get<RepoScanResult>(apiUrl(`/api/repo-scan/${id}`), { headers: apiHeaders() });
           if (result.status === 'complete' || result.status === 'error') {
             clearInterval(poll);
             setScanningUrl(null);
@@ -372,7 +380,7 @@ export default function RepoScanPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
         <div className="min-w-0">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Repositories</h1>
+          <h1 className="text-xl md:text-2xl font-bold" style={{ color: '#ede9ff' }}>Repositories</h1>
           {connected && repos.length > 0 && (
             <span className="inline-flex items-center gap-1.5 mt-1.5 text-xs font-medium bg-green-50 text-green-700 border border-green-200 px-2.5 py-1 rounded-full">
               <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
@@ -441,29 +449,31 @@ export default function RepoScanPage() {
           {/* Search + filter */}
           <div className="flex flex-wrap items-center gap-2 mb-5 mt-4">
             <div className="relative flex-1 min-w-[180px]">
-              <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: '#6b6880' }} />
               <input
                 type="text"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search repositories…"
-                className="w-full bg-white border border-gray-200 rounded-full pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm"
+                className="w-full rounded-full pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                style={{ backgroundColor: '#1d1a2b', border: '1px solid #2e2a42', color: '#ede9ff' }}
               />
             </div>
             {languages.length > 0 && (
               <div className="flex items-center gap-2">
-                <Filter size={14} className="text-gray-400" />
+                <Filter size={14} style={{ color: '#6b6880' }} />
                 <select
                   value={langFilter}
                   onChange={e => setLangFilter(e.target.value)}
-                  className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                  style={{ backgroundColor: '#1d1a2b', border: '1px solid #2e2a42', color: '#ede9ff' }}
                 >
                   <option value="">All languages</option>
                   {languages.map(l => <option key={l} value={l}>{l}</option>)}
                 </select>
               </div>
             )}
-            <p className="text-xs text-gray-400 ml-auto">
+            <p className="text-xs ml-auto" style={{ color: '#6b6880' }}>
               {scannedCount} of {repos.length} scanned
             </p>
           </div>
@@ -479,7 +489,7 @@ export default function RepoScanPage() {
                 <col className="w-44" />
               </colgroup>
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50/60">
+                <tr style={{ borderBottom: '1px solid #2e2a42', backgroundColor: 'rgba(255,255,255,0.03)' }}>
                   {[
                     { label: 'Repo name' },
                     { label: 'Language' },
@@ -487,9 +497,9 @@ export default function RepoScanPage() {
                     { label: 'Last scan' },
                     { label: '' }
                   ].map(({ label, sub }, i) => (
-                    <th key={i} className="px-4 py-3 text-xs font-semibold text-gray-500 whitespace-nowrap">
+                    <th key={i} className="px-4 py-3 text-xs font-semibold whitespace-nowrap" style={{ color: '#6b6880' }}>
                       {sub
-                        ? <span className="flex items-center gap-2">{label}<span className="flex gap-1 font-normal normal-case tracking-normal text-gray-400">{sub.map(l => <span key={l} className="w-7 text-center">{l}</span>)}</span></span>
+                        ? <span className="flex items-center gap-2">{label}<span className="flex gap-1 font-normal normal-case tracking-normal" style={{ color: '#4e4b60' }}>{sub.map(l => <span key={l} className="w-7 text-center">{l}</span>)}</span></span>
                         : label}
                     </th>
                   ))}

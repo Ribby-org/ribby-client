@@ -10,7 +10,7 @@ export default function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-screen overflow-hidden" style={{ backgroundColor: '#181623' }}>
       {/* Desktop sidebar */}
       <div className="hidden md:flex">
         <Sidebar onClose={() => {}} />
@@ -21,7 +21,7 @@ export default function Layout({ children }: LayoutProps) {
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-40 bg-black/30 md:hidden"
+            className="fixed inset-0 z-40 bg-black/60 md:hidden"
             onClick={() => setSidebarOpen(false)}
           />
           {/* Drawer */}

@@ -35,11 +35,13 @@ export function useGitHubRepos(orgId: string | undefined) {
 
   const connectGitHub = async () => {
     if (orgId) localStorage.removeItem(disconnectKey(orgId));
+    // Save current path so we can return here after OAuth
+    localStorage.setItem('ribby_oauth_return', window.location.pathname);
     await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
         scopes: 'repo read:user',
-        redirectTo: window.location.href
+        redirectTo: window.location.origin
       }
     });
   };

@@ -21,92 +21,103 @@ export default function OrgPickerPage({ onCreateNew }: OrgPickerPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Top bar */}
-      <div className="border-b border-gray-200 bg-white px-4 sm:px-6 py-4 flex items-center justify-between">
-        <span className="font-bold text-gray-900 tracking-tight text-lg">Ribby</span>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="flex items-center gap-2">
-            {avatar ? (
-              <img src={avatar} alt={name} className="w-7 h-7 rounded-full ring-1 ring-gray-200" />
-            ) : (
-              <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center">
-                <span className="text-xs font-medium text-gray-600">{name.charAt(0).toUpperCase()}</span>
-              </div>
-            )}
-            <span className="hidden sm:block text-sm text-gray-700 font-medium truncate max-w-[140px]">{name}</span>
-          </div>
+    <div className="flex min-h-screen" style={{ backgroundColor: '#181623' }}>
+
+      {/* Left icon strip */}
+      <div className="flex flex-col items-center justify-between py-6 px-3 flex-shrink-0"
+        style={{ width: '60px' }}>
+        {/* Logo initial */}
+        <span className="text-sm font-bold" style={{ color: '#a78bfa' }}>R</span>
+
+        {/* Bottom: avatar + logout */}
+        <div className="flex flex-col items-center gap-3">
+          {avatar ? (
+            <img src={avatar} alt={name} className="w-8 h-8 rounded-full" title={name} />
+          ) : (
+            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: '#2e2a42' }}>
+              <span className="text-xs font-medium" style={{ color: '#9390aa' }}>
+                {name.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
           <button
             onClick={signOut}
-            className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-red-500 transition-colors px-2 py-1.5 rounded-lg hover:bg-red-50"
+            title="Sign out"
+            className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
+            style={{ color: '#6b6880' }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.08)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = '#6b6880'; e.currentTarget.style.backgroundColor = 'transparent'; }}
           >
-            <LogOut size={13} />
-            <span className="hidden sm:inline">Sign out</span>
+            <LogOut size={15} />
           </button>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Your organizations</h1>
-            <p className="text-sm text-gray-400 mt-1">Select an organization to continue</p>
+      {/* Main content */}
+      <div className="flex-1 flex items-start justify-center px-6 pt-16 pb-12">
+        <div className="w-full max-w-3xl">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold" style={{ color: '#ede9ff' }}>Your organizations</h1>
+              <p className="text-sm mt-1" style={{ color: '#6b6880' }}>Select an organization to continue</p>
+            </div>
+            {organizations.length < 20 && (
+              <button onClick={onCreateNew} className="btn-primary self-start sm:self-auto">
+                <Plus size={15} /> New Organization
+              </button>
+            )}
           </div>
-          {organizations.length < 20 && (
-            <button onClick={onCreateNew} className="btn-primary self-start sm:self-auto">
-              <Plus size={15} /> New Organization
-            </button>
-          )}
-        </div>
 
-        {/* Org grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {organizations.map(org => (
-            <button
-              key={org.id}
-              onClick={() => handleSelect(org)}
-              className="card p-5 text-left hover:shadow-md hover:border-blue-200 transition-all duration-200 group"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
-                  <Building2 size={18} className="text-blue-600" />
+          {/* Org grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {organizations.map(org => (
+              <button
+                key={org.id}
+                onClick={() => handleSelect(org)}
+                className="card p-5 text-left transition-all duration-200 hover:scale-[1.02]"
+                style={{ border: '1px solid #2e2a42' }}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.25)' }}>
+                    <Building2 size={18} style={{ color: '#a78bfa' }} />
+                  </div>
+                  <ChevronRight size={16} className="mt-1" style={{ color: '#4e4b60' }} />
                 </div>
-                <ChevronRight size={16} className="text-gray-300 group-hover:text-blue-500 transition-colors mt-1" />
-              </div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-1 truncate">{org.name}</h3>
-              {org.description ? (
-                <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed">{org.description}</p>
-              ) : (
-                <p className="text-xs text-gray-300 italic">No description</p>
-              )}
-              <p className="text-[11px] text-gray-300 mt-3">
-                Created {new Date(org.created_at).toLocaleDateString()}
-              </p>
-            </button>
-          ))}
+                <h3 className="text-sm font-semibold mb-1 truncate" style={{ color: '#ede9ff' }}>{org.name}</h3>
+                {org.description ? (
+                  <p className="text-xs line-clamp-2 leading-relaxed" style={{ color: '#6b6880' }}>{org.description}</p>
+                ) : (
+                  <p className="text-xs italic" style={{ color: '#4e4b60' }}>No description</p>
+                )}
+                <p className="text-[11px] mt-3" style={{ color: '#4e4b60' }}>
+                  Created {new Date(org.created_at).toLocaleDateString()}
+                </p>
+              </button>
+            ))}
 
-          {/* Create new card */}
-          {organizations.length < 20 && (
-            <button
-              onClick={onCreateNew}
-              className="card p-5 text-left border-dashed hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-200 group flex flex-col items-center justify-center gap-2 min-h-[140px]"
-            >
-              <div className="w-10 h-10 rounded-xl bg-gray-100 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
-                <Plus size={18} className="text-gray-400 group-hover:text-blue-600 transition-colors" />
-              </div>
-              <p className="text-sm text-gray-400 group-hover:text-blue-600 font-medium transition-colors">
-                New Organization
-              </p>
-            </button>
+            {organizations.length < 20 && (
+              <button
+                onClick={onCreateNew}
+                className="card p-5 transition-all duration-200 flex flex-col items-center justify-center gap-2 min-h-[140px]"
+                style={{ border: '1px dashed #2e2a42' }}
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: '#2e2a42' }}>
+                  <Plus size={18} style={{ color: '#6b6880' }} />
+                </div>
+                <p className="text-sm font-medium" style={{ color: '#6b6880' }}>New Organization</p>
+              </button>
+            )}
+          </div>
+
+          {organizations.length === 20 && (
+            <p className="text-center text-xs mt-6" style={{ color: '#6b6880' }}>
+              You have reached the maximum of 20 organizations.
+            </p>
           )}
         </div>
-
-        {organizations.length === 20 && (
-          <p className="text-center text-xs text-gray-400 mt-6">
-            You have reached the maximum of 20 organizations.
-          </p>
-        )}
       </div>
     </div>
   );

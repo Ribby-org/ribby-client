@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { NavLink, useNavigate, useParams } from 'react-router-dom';
 import { History, ScanLine, LogOut, X, ChevronLeft, Building2, Github, ClipboardList, Bug } from 'lucide-react';
+import LegalModal from './LegalModal';
 import { useAuth } from '../../hooks/useAuth';
 import { useOrganization } from '../../hooks/useOrganization';
 
@@ -13,6 +15,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
   const { orgId } = useParams<{ orgId: string }>();
   const navigate = useNavigate();
 
+  const [legal, setLegal] = useState<'privacy' | 'terms' | null>(null);
   const avatar = user?.user_metadata?.avatar_url as string | undefined;
   const name = (user?.user_metadata?.full_name || user?.user_metadata?.user_name || user?.email || '') as string;
   const currentOrg = organizations.find(o => o.id === orgId);
@@ -21,8 +24,8 @@ export default function Sidebar({ onClose }: SidebarProps) {
     {
       label: 'Web Scanner',
       items: [
-        { to: `/org/${orgId}/scanner`,   icon: ScanLine,      label: 'Scanner' },
-        { to: `/org/${orgId}/audit`,     icon: ClipboardList, label: 'Site Audit' },
+        { to: `/org/${orgId}/scanner`, icon: ScanLine,      label: 'Scanner' },
+        { to: `/org/${orgId}/audit`,   icon: ClipboardList, label: 'Site Audit' },
       ]
     },
     {
@@ -46,29 +49,36 @@ export default function Sidebar({ onClose }: SidebarProps) {
   ];
 
   return (
-    <aside className="w-56 flex-shrink-0 bg-white border-r border-gray-200 flex flex-col h-full">
-
+    <aside
+      className="w-56 flex-shrink-0 flex flex-col h-full"
+      style={{ backgroundColor: '#1d1a2b' }}
+    >
       {/* Org header */}
-      <div className="px-4 py-4 border-b border-gray-100">
+      <div className="px-4 py-4" style={{ borderBottom: '1px solid #2e2a42' }}>
         <button
           onClick={() => { navigate('/'); onClose(); }}
-          className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 mb-3 transition-colors"
+          className="flex items-center gap-1.5 text-xs mb-3 transition-colors"
+          style={{ color: '#6b6880' }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#9390aa')}
+          onMouseLeave={e => (e.currentTarget.style.color = '#6b6880')}
         >
           <ChevronLeft size={13} />
           All organizations
         </button>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
-              <Building2 size={13} className="text-blue-600" />
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.25)' }}>
+              <Building2 size={13} className="text-blue-400" />
             </div>
-            <span className="font-semibold text-gray-900 text-sm truncate">
+            <span className="font-semibold text-sm truncate" style={{ color: '#ede9ff' }}>
               {currentOrg?.name ?? 'Organization'}
             </span>
           </div>
           <button
             onClick={onClose}
-            className="md:hidden p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            className="md:hidden p-1 rounded-lg transition-colors"
+            style={{ color: '#6b6880' }}
           >
             <X size={15} />
           </button>
@@ -79,7 +89,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
       <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
         {sections.map(section => (
           <div key={section.label}>
-            <p className="text-[11px] font-semibold text-gray-400 px-2 mb-1.5">
+            <p className="text-[10px] font-semibold uppercase tracking-widest px-2 mb-1.5" style={{ color: '#4e4b60' }}>
               {section.label}
             </p>
             <div className="space-y-0.5">
@@ -90,10 +100,12 @@ export default function Sidebar({ onClose }: SidebarProps) {
                   onClick={onClose}
                   className={({ isActive }) =>
                     `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors duration-150 ${
-                      isActive
-                        ? 'bg-blue-50 text-blue-600 font-medium'
-                        : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'
+                      isActive ? 'text-blue-400 font-medium' : ''
                     }`
+                  }
+                  style={({ isActive }) => isActive
+                    ? { backgroundColor: 'rgba(124,58,237,0.15)', color: '#a78bfa' }
+                    : { color: '#9390aa' }
                   }
                 >
                   <Icon size={15} />
@@ -107,29 +119,58 @@ export default function Sidebar({ onClose }: SidebarProps) {
 
       {/* User */}
       {user && (
-        <div className="px-3 py-4 border-t border-gray-100">
+        <div className="px-3 py-4" style={{ borderTop: '1px solid #2e2a42' }}>
           <div className="flex items-center gap-2.5 px-2 mb-2">
             {avatar ? (
-              <img src={avatar} alt={name} className="w-7 h-7 rounded-full flex-shrink-0 ring-1 ring-gray-200" />
+              <img src={avatar} alt={name} className="w-7 h-7 rounded-full flex-shrink-0" />
             ) : (
-              <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                <span className="text-xs font-medium text-gray-600">{name.charAt(0).toUpperCase()}</span>
+              <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: '#2e2a42' }}>
+                <span className="text-xs font-medium" style={{ color: '#9390aa' }}>{name.charAt(0).toUpperCase()}</span>
               </div>
             )}
             <div className="min-w-0">
-              <p className="text-xs font-medium text-gray-800 truncate">{name}</p>
-              <p className="text-[11px] text-gray-400 truncate">{user.email}</p>
+              <p className="text-xs font-medium truncate" style={{ color: '#ede9ff' }}>{name}</p>
+              <p className="text-[11px] truncate" style={{ color: '#6b6880' }}>{user.email}</p>
             </div>
           </div>
           <button
             onClick={signOut}
-            className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors duration-150"
+            className="w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded-lg transition-colors duration-150"
+            style={{ color: '#6b6880' }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.08)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = '#6b6880'; e.currentTarget.style.backgroundColor = 'transparent'; }}
           >
             <LogOut size={13} />
             Sign out
           </button>
         </div>
       )}
+
+      {/* Legal links */}
+      <div className="px-4 pb-3 flex items-center gap-3">
+        <button
+          onClick={() => setLegal('privacy')}
+          className="text-[10px] transition-colors"
+          style={{ color: '#4e4b60' }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#9390aa')}
+          onMouseLeave={e => (e.currentTarget.style.color = '#4e4b60')}
+        >
+          Privacy
+        </button>
+        <span style={{ color: '#2e2a42' }}>·</span>
+        <button
+          onClick={() => setLegal('terms')}
+          className="text-[10px] transition-colors"
+          style={{ color: '#4e4b60' }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#9390aa')}
+          onMouseLeave={e => (e.currentTarget.style.color = '#4e4b60')}
+        >
+          Terms
+        </button>
+      </div>
+
+      {legal && <LegalModal type={legal} onClose={() => setLegal(null)} />}
     </aside>
   );
 }

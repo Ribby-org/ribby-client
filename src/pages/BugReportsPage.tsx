@@ -228,13 +228,16 @@ export default function BugReportsPage() {
             <button
               key={tab.value}
               onClick={() => setStatusFilter(tab.value)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                active ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600'
-              }`}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all"
+              style={active
+                ? { backgroundColor: '#7c3aed', color: '#fff' }
+                : { color: '#9390aa', border: '1px solid #2e2a42' }
+              }
             >
               {tab.label}
               {count > 0 && (
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${active ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold"
+                  style={active ? { backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff' } : { backgroundColor: 'rgba(255,255,255,0.06)', color: '#6b6880' }}>
                   {count}
                 </span>
               )}

@@ -31,7 +31,7 @@ export default function ScoreRing({ score, size = 100 }: ScoreRingProps) {
       <svg width={size} height={size} className="-rotate-90">
         <circle
           cx={size / 2} cy={size / 2} r={r}
-          fill="none" stroke="#f3f4f6" strokeWidth={stroke}
+          fill="none" stroke="#2e2a42" strokeWidth={stroke}
         />
         <circle
           cx={size / 2} cy={size / 2} r={r}

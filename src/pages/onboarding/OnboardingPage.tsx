@@ -37,7 +37,7 @@ export default function OnboardingPage({ user, onComplete, onCancel }: Onboardin
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-app flex items-center justify-center p-4">
       <div className="w-full max-w-md">
 
         {/* Logo */}
@@ -60,18 +60,20 @@ export default function OnboardingPage({ user, onComplete, onCancel }: Onboardin
 
           {/* Step indicator */}
           <div className="flex items-center gap-2 mb-6">
-            <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-full bg-violet-600 flex items-center justify-center flex-shrink-0">
               <span className="text-white text-xs font-bold">1</span>
             </div>
-            <div className="flex-1 h-px bg-gray-200" />
-            <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
-              <span className="text-gray-400 text-xs font-bold">2</span>
+            <div className="flex-1 h-px" style={{ backgroundColor: '#2e2a42' }} />
+            <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: '#2e2a42' }}>
+              <span className="text-xs font-bold" style={{ color: '#6b6880' }}>2</span>
             </div>
           </div>
 
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
-              <Building2 size={18} className="text-blue-600" />
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.25)' }}>
+              <Building2 size={18} style={{ color: '#a78bfa' }} />
             </div>
             <div>
               <h1 className="text-lg font-semibold text-gray-900">Create your organization</h1>

@@ -28,10 +28,13 @@ export default function FindingCard({ finding, index, onReport }: FindingCardPro
   const [open, setOpen] = useState(index < 2);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+    <div className="rounded-lg overflow-hidden" style={{ backgroundColor: '#2a2640', border: '1px solid #2e2a42' }}>
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-start gap-2.5 px-3.5 py-3 text-left hover:bg-gray-50 transition-colors duration-100"
+        className="w-full flex items-start gap-2.5 px-3.5 py-3 text-left transition-colors duration-100"
+        style={{ backgroundColor: 'transparent' }}
+        onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)')}
+        onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
       >
         <span className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${DOT[finding.severity]}`} />
         <div className="flex-1 min-w-0">
@@ -51,28 +54,29 @@ export default function FindingCard({ finding, index, onReport }: FindingCardPro
       </button>
 
       {open && (
-        <div className="px-3.5 pb-3.5 border-t border-gray-100 pt-3 space-y-2.5">
-          <p className="text-xs text-gray-500 leading-relaxed">{finding.description}</p>
+        <div className="px-3.5 pb-3.5 pt-3 space-y-2.5" style={{ borderTop: '1px solid #2e2a42' }}>
+          <p className="text-xs leading-relaxed" style={{ color: '#9390aa' }}>{finding.description}</p>
 
           {finding.location && (
             <div className="flex items-start gap-1.5">
-              <MapPin size={11} className="mt-0.5 flex-shrink-0 text-gray-400" />
-              <span className="text-[11px] font-mono text-gray-400 break-all">{finding.location}</span>
+              <MapPin size={11} className="mt-0.5 flex-shrink-0" style={{ color: '#6b6880' }} />
+              <span className="text-[11px] font-mono break-all" style={{ color: '#6b6880' }}>{finding.location}</span>
             </div>
           )}
 
-          <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
+          <div className="rounded-lg px-3 py-2.5" style={{ backgroundColor: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)' }}>
             <div className="flex items-center gap-1.5 mb-1">
-              <Lightbulb size={11} className="text-blue-600" />
-              <span className="text-[11px] font-semibold text-blue-600 uppercase tracking-wide">Fix</span>
+              <Lightbulb size={11} style={{ color: '#a78bfa' }} />
+              <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: '#a78bfa' }}>Fix</span>
             </div>
-            <p className="text-xs text-gray-600 leading-relaxed">{finding.recommendation}</p>
+            <p className="text-xs leading-relaxed" style={{ color: '#c4c0d8' }}>{finding.recommendation}</p>
           </div>
 
           {onReport && (
             <button
               onClick={() => onReport(finding)}
-              className="flex items-center gap-1.5 text-xs text-red-500 hover:text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded-lg border border-red-100 transition-colors w-fit"
+              className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg transition-colors w-fit"
+              style={{ color: '#f87171', border: '1px solid rgba(239,68,68,0.25)', backgroundColor: 'rgba(239,68,68,0.08)' }}
             >
               <Bug size={12} /> Report Bug
             </button>
