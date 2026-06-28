@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Shield, Zap, Eye, Wrench, Activity, Download, Loader2 } from 'lucide-react';
+import { ArrowLeft, Shield, Zap, Eye, Wrench, Activity, Download, Loader2, Lock } from 'lucide-react';
 import TestCard from '../components/scanner/TestCard';
 import type { ScanType, ScanResult } from '../types/scan';
 import { useAuth } from '../hooks/useAuth';
@@ -55,6 +55,14 @@ const TESTS: TestDef[] = [
     icon: Wrench,
     iconColor: 'text-violet-500',
     iconBg: 'bg-violet-50'
+  },
+  {
+    type: 'crypto',
+    title: 'Crypto & Breach Detection',
+    description: 'Detects cryptojacking scripts, weak algorithms (MD5, SHA1, DES, RC4), exposed JWT tokens, missing SRI, and insecure cookie flags.',
+    icon: Lock,
+    iconColor: 'text-amber-500',
+    iconBg: 'bg-amber-50'
   }
 ];
 
@@ -92,7 +100,7 @@ export default function ScanHubPage() {
         </div>
         {(() => {
           const done = Object.keys(completedScans).length;
-          const total = 5;
+          const total = 6;
           return (
             <button
               onClick={handleDownload}

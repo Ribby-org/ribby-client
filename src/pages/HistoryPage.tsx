@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Clock, Trash2, History, Shield, Zap, Eye, Wrench, Activity, ChevronDown, ChevronUp, ExternalLink, Globe, Lock, Mail, Link } from 'lucide-react';
+import { Clock, Trash2, History, Shield, Zap, Eye, Wrench, Activity, ChevronDown, ChevronUp, ExternalLink, Globe, Lock, Mail, Link, KeyRound } from 'lucide-react';
 import { useScans, type UrlGroup, type DbScan } from '../hooks/useScans';
 import type { ScanType } from '../types/scan';
 import FindingCard from '../components/results/FindingCard';
@@ -15,7 +15,8 @@ const TYPE_META: Record<ScanType, { label: string; icon: typeof Shield; color: s
   seo:           { label: 'SEO',         icon: Globe,    color: 'text-emerald-600', bg: 'bg-emerald-50' },
   ssl:           { label: 'SSL',         icon: Lock,     color: 'text-blue-600',    bg: 'bg-blue-50' },
   dns:           { label: 'DNS',         icon: Mail,     color: 'text-violet-600',  bg: 'bg-violet-50' },
-  links:         { label: 'Links',       icon: Link,     color: 'text-rose-500',    bg: 'bg-rose-50' }
+  links:         { label: 'Links',       icon: Link,     color: 'text-rose-500',    bg: 'bg-rose-50' },
+  crypto:        { label: 'Crypto',      icon: KeyRound, color: 'text-amber-500',   bg: 'bg-amber-50' }
 };
 
 function scoreColor(score: number) {

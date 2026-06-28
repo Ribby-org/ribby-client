@@ -1,7 +1,7 @@
 export type Severity = 'critical' | 'high' | 'medium' | 'low' | 'info';
 export type Category = 'security' | 'performance' | 'functional' | 'accessibility';
 export type ScanStatus = 'pending' | 'scanning' | 'complete' | 'error';
-export type ScanType = 'security' | 'performance' | 'accessibility' | 'functional' | 'load' | 'seo' | 'ssl' | 'dns' | 'links';
+export type ScanType = 'security' | 'performance' | 'accessibility' | 'functional' | 'load' | 'seo' | 'ssl' | 'dns' | 'links' | 'crypto';
 
 export interface Finding {
   id: string;
