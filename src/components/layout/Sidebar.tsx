@@ -19,6 +19,8 @@ export default function Sidebar({ onClose }: SidebarProps) {
   const avatar = user?.user_metadata?.avatar_url as string | undefined;
   const name = (user?.user_metadata?.full_name || user?.user_metadata?.user_name || user?.email || '') as string;
   const currentOrg = organizations.find(o => o.id === orgId);
+  // Repositories are only available in the user's first (primary) organization
+  const isFirstOrg = organizations.length > 0 && organizations[0].id === orgId;
 
   const sections = [
     {
@@ -28,12 +30,12 @@ export default function Sidebar({ onClose }: SidebarProps) {
         { to: `/org/${orgId}/audit`,   icon: ClipboardList, label: 'Site Audit' },
       ]
     },
-    {
+    ...(isFirstOrg ? [{
       label: 'Code',
       items: [
         { to: `/org/${orgId}/repo`, icon: Github, label: 'Repositories' }
       ]
-    },
+    }] : []),
     {
       label: 'QA',
       items: [

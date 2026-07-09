@@ -307,11 +307,34 @@ function ConnectBanner({ onConnect }: { onConnect: () => void }) {
   );
 }
 
+// ── Connected-elsewhere banner ─────────────────────────────────────────────────
+function ConnectedElsewhereBanner({ onDisconnect }: { onDisconnect: () => void }) {
+  return (
+    <div className="card p-14 text-center">
+      <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
+        style={{ backgroundColor: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)' }}>
+        <Lock size={24} style={{ color: '#fbbf24' }} />
+      </div>
+      <h3 className="text-base font-semibold mb-1" style={{ color: '#ede9ff' }}>GitHub already connected</h3>
+      <p className="text-sm mb-6 max-w-sm mx-auto" style={{ color: '#9390aa' }}>
+        Your GitHub account is connected to another organisation. Disconnect it there first, or disconnect it now to connect here instead.
+      </p>
+      <button
+        onClick={onDisconnect}
+        className="inline-flex items-center gap-2 mx-auto px-4 py-2 rounded-full text-sm font-medium transition-colors"
+        style={{ backgroundColor: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' }}
+      >
+        <X size={14} /> Disconnect &amp; connect here
+      </button>
+    </div>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function RepoScanPage() {
   const { orgId } = useParams<{ orgId: string }>();
   const { user } = useAuth();
-  const { repos, loading: ghLoading, error: ghError, connected, fetchRepos, connectGitHub, disconnect } = useGitHubRepos(orgId);
+  const { repos, loading: ghLoading, error: ghError, connected, connectedElsewhereOrgId, fetchRepos, connectGitHub, disconnect } = useGitHubRepos(orgId, user?.id);
   const { scans, fetchScans } = useRepoScans(orgId);
 
   const [search, setSearch] = useState('');
@@ -420,8 +443,13 @@ export default function RepoScanPage() {
       )}
 
       {/* Not connected */}
-      {!ghLoading && !connected && (
+      {!ghLoading && !connected && !connectedElsewhereOrgId && (
         <ConnectBanner onConnect={handleConnect} />
+      )}
+
+      {/* Connected to a different org */}
+      {!ghLoading && !connected && connectedElsewhereOrgId && (
+        <ConnectedElsewhereBanner onDisconnect={disconnect} />
       )}
 
       {/* Loading */}

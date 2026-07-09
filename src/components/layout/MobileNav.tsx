@@ -12,6 +12,7 @@ export default function MobileNav({ onMenuClick }: MobileNavProps) {
   const { organizations } = useOrganization(user);
   const { orgId } = useParams<{ orgId: string }>();
   const currentOrg = organizations.find(o => o.id === orgId);
+  const isFirstOrg = organizations.length > 0 && organizations[0].id === orgId;
 
   const avatar = user?.user_metadata?.avatar_url as string | undefined;
   const name = (user?.user_metadata?.full_name || user?.user_metadata?.user_name || '') as string;
@@ -19,7 +20,7 @@ export default function MobileNav({ onMenuClick }: MobileNavProps) {
   const tabs = [
     { to: `/org/${orgId}/scanner`, icon: ScanLine,      label: 'Scanner' },
     { to: `/org/${orgId}/audit`,   icon: ClipboardList, label: 'Audit' },
-    { to: `/org/${orgId}/repo`,    icon: Github,        label: 'Repos' },
+    ...(isFirstOrg ? [{ to: `/org/${orgId}/repo`, icon: Github, label: 'Repos' }] : []),
     { to: `/org/${orgId}/history`, icon: History,       label: 'History' }
   ];
 

@@ -16,18 +16,28 @@ export interface GitHubRepo {
   owner: { login: string; avatar_url: string };
 }
 
-// Scoped per organization so each org can connect/disconnect independently
-const connectedKey = (orgId: string) => `ribby_gh_connected_${orgId}`;
+/**
+ * One GitHub connection per user, shared across all their orgs but only
+ * "active" in the single org that connected it.
+ *
+ * Storage key: `ribby_gh_org_{userId}` = orgId that owns the connection.
+ */
+const userOrgKey = (userId: string) => `ribby_gh_org_${userId}`;
 
-export function useGitHubRepos(orgId: string | undefined) {
-  const isConnectedForOrg = () =>
-    orgId ? localStorage.getItem(connectedKey(orgId)) === 'true' : false;
+function getOwningOrg(userId: string | undefined): string | null {
+  if (!userId) return null;
+  return localStorage.getItem(userOrgKey(userId));
+}
+
+export function useGitHubRepos(orgId: string | undefined, userId: string | undefined) {
+  const owningOrg = getOwningOrg(userId);
+  const isThisOrgConnected = !!owningOrg && owningOrg === orgId;
+  const connectedElsewhereOrgId = owningOrg && owningOrg !== orgId ? owningOrg : null;
 
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  // Start connected only if this specific org was previously connected
-  const [connected, setConnected] = useState(() => isConnectedForOrg());
+  const [connected, setConnected] = useState(() => isThisOrgConnected);
 
   const getToken = async (): Promise<string | null> => {
     const { data } = await supabase.auth.getSession();
@@ -35,10 +45,10 @@ export function useGitHubRepos(orgId: string | undefined) {
   };
 
   const connectGitHub = async () => {
-    // Save current path so we can return here after OAuth
+    // Save return path and which org + user initiated the OAuth
     localStorage.setItem('ribby_oauth_return', window.location.pathname);
-    // Mark which org initiated the connection so we can scope it on return
     if (orgId) localStorage.setItem('ribby_oauth_org', orgId);
+    if (userId) localStorage.setItem('ribby_oauth_user', userId);
     await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
@@ -49,15 +59,31 @@ export function useGitHubRepos(orgId: string | undefined) {
   };
 
   const disconnect = () => {
-    if (orgId) localStorage.removeItem(connectedKey(orgId));
+    if (userId) localStorage.removeItem(userOrgKey(userId));
     setConnected(false);
     setRepos([]);
     setError('');
   };
 
   const fetchRepos = useCallback(async () => {
-    if (!orgId || !isConnectedForOrg()) {
-      // Only auto-fetch if this org has explicitly connected before
+    if (!orgId || !userId) return;
+
+    // Detect return from GitHub OAuth for this user+org
+    const oauthOrg = localStorage.getItem('ribby_oauth_org');
+    const oauthUser = localStorage.getItem('ribby_oauth_user');
+    const justReturned = oauthOrg === orgId && oauthUser === userId;
+
+    if (justReturned) {
+      // Consume flags
+      localStorage.removeItem('ribby_oauth_org');
+      localStorage.removeItem('ribby_oauth_user');
+    }
+
+    const currentOwner = getOwningOrg(userId);
+    const thisOrgOwns = currentOwner === orgId;
+
+    if (!thisOrgOwns && !justReturned) {
+      // Not connected here — show connect or "connected elsewhere" UI
       setConnected(false);
       setLoading(false);
       return;
@@ -68,8 +94,7 @@ export function useGitHubRepos(orgId: string | undefined) {
 
     const token = await getToken();
     if (!token) {
-      // Token gone (e.g. session expired) — clear the org connection
-      if (orgId) localStorage.removeItem(connectedKey(orgId));
+      localStorage.removeItem(userOrgKey(userId));
       setConnected(false);
       setLoading(false);
       return;
@@ -91,11 +116,11 @@ export function useGitHubRepos(orgId: string | undefined) {
 
       setRepos(allRepos);
       setConnected(true);
-      // Persist connected state for this org
-      if (orgId) localStorage.setItem(connectedKey(orgId), 'true');
+      // Record which org owns the connection for this user
+      localStorage.setItem(userOrgKey(userId), orgId);
     } catch (err: any) {
       if (err?.response?.status === 401 || err?.response?.status === 403) {
-        if (orgId) localStorage.removeItem(connectedKey(orgId));
+        localStorage.removeItem(userOrgKey(userId));
         setConnected(false);
         setError('GitHub token expired or missing repo scope. Please reconnect.');
       } else {
@@ -105,7 +130,7 @@ export function useGitHubRepos(orgId: string | undefined) {
 
     setLoading(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orgId]);
+  }, [orgId, userId]);
 
-  return { repos, loading, error, connected, fetchRepos, connectGitHub, disconnect };
+  return { repos, loading, error, connected, connectedElsewhereOrgId, fetchRepos, connectGitHub, disconnect };
 }
