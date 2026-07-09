@@ -4,7 +4,6 @@ import { Download, Loader2 } from 'lucide-react';
 import TestCard from '../components/scanner/TestCard';
 import ScanInput from '../components/scanner/ScanInput';
 import BrowsingActivity from '../components/scanner/BrowsingActivity';
-import SiteIntelPanel from '../components/scanner/SiteIntelPanel';
 import type { ScanType, ScanResult } from '../types/scan';
 import { useAuth } from '../hooks/useAuth';
 import { useSiteIntel } from '../hooks/useSiteIntel';
@@ -156,11 +155,6 @@ export default function ScanHubPage() {
         />
       </div>
 
-      {meta && !intelLoading && (
-        <div className="mb-6">
-          <SiteIntelPanel meta={meta} />
-        </div>
-      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {TESTS.map((test, i) => (
