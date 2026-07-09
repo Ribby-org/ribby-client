@@ -68,7 +68,7 @@ export default function AuditPage() {
 
   const handleDownload = async () => {
     setDownloading(true);
-    try { await downloadWebReport(submitted, completedScans, 'Site Audit Report'); }
+    try { await downloadWebReport(submitted, completedScans, 'Site Audit Report', meta); }
     finally { setDownloading(false); }
   };
 

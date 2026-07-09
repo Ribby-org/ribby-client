@@ -96,7 +96,7 @@ export default function ScanHubPage() {
   const handleDownload = async () => {
     if (!activeUrl) return;
     setDownloading(true);
-    try { await downloadWebReport(activeUrl, completedScans, 'Scanner Report'); }
+    try { await downloadWebReport(activeUrl, completedScans, 'Scanner Report', meta); }
     finally { setDownloading(false); }
   };
 
