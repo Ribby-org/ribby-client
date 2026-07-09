@@ -1,8 +1,11 @@
 import { useState, FormEvent } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Search, ArrowLeft, Globe, Lock, Mail, Link, Download, Loader2 } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { Search, Globe, Lock, Mail, Link, Download, Loader2 } from 'lucide-react';
 import TestCard from '../components/scanner/TestCard';
+import BrowsingActivity from '../components/scanner/BrowsingActivity';
+import SiteIntelPanel from '../components/scanner/SiteIntelPanel';
 import { useAuth } from '../hooks/useAuth';
+import { useSiteIntel } from '../hooks/useSiteIntel';
 import type { ScanType, ScanResult } from '../types/scan';
 import { downloadWebReport } from '../pdf/RibbyPDF';
 
@@ -53,11 +56,11 @@ const AUDIT_TESTS: AuditTest[] = [
 export default function AuditPage() {
   const { orgId } = useParams<{ orgId: string }>();
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [url, setUrl] = useState('');
   const [submitted, setSubmitted] = useState('');
   const [completedScans, setCompletedScans] = useState<Partial<Record<ScanType, ScanResult>>>({});
   const [downloading, setDownloading] = useState(false);
+  const { meta, loading: intelLoading, error: intelError, step } = useSiteIntel(submitted || undefined);
 
   const handleComplete = (result: ScanResult) => {
     setCompletedScans(prev => ({ ...prev, [result.type]: result }));
@@ -73,12 +76,12 @@ export default function AuditPage() {
     e.preventDefault();
     if (!url.trim()) return;
     const normalized = url.trim().startsWith('http') ? url.trim() : 'https://' + url.trim();
+    setCompletedScans({});
     setSubmitted(normalized);
   };
 
   return (
     <div className="p-4 md:p-6 max-w-4xl mx-auto pb-24 md:pb-6">
-      {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-xl font-semibold text-gray-900">Site Audit</h1>
@@ -103,8 +106,7 @@ export default function AuditPage() {
         </p>
       </div>
 
-      {/* URL Input */}
-      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 mb-8">
+      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 mb-5">
         <div className="relative flex-1">
           <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
@@ -124,18 +126,24 @@ export default function AuditPage() {
         </button>
       </form>
 
-      {/* Cards — shown after URL is submitted */}
-      {submitted ? (
+      {submitted && (
         <>
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-xs text-gray-400 font-mono truncate max-w-xs">{submitted}</p>
-            <button
-              onClick={() => setSubmitted('')}
-              className="text-xs text-gray-400 hover:text-gray-700 underline underline-offset-2"
-            >
-              Change URL
-            </button>
+          <div className="mb-5">
+            <BrowsingActivity
+              url={submitted}
+              step={step}
+              loading={intelLoading}
+              error={intelError}
+              hostname={meta?.hostname}
+              detectedServices={meta?.detectedServices}
+            />
           </div>
+
+          {meta && !intelLoading && (
+            <div className="mb-6">
+              <SiteIntelPanel meta={meta} />
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {AUDIT_TESTS.map((test, i) => (
@@ -159,8 +167,9 @@ export default function AuditPage() {
             ))}
           </div>
         </>
-      ) : (
-        /* Empty state */
+      )}
+
+      {!submitted && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {AUDIT_TESTS.map(test => {
             const Icon = test.icon;

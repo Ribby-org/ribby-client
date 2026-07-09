@@ -1,10 +1,15 @@
-import { useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Shield, Zap, Eye, Wrench, Activity, Download, Loader2, Lock } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Download, Loader2 } from 'lucide-react';
 import TestCard from '../components/scanner/TestCard';
+import ScanInput from '../components/scanner/ScanInput';
+import BrowsingActivity from '../components/scanner/BrowsingActivity';
+import SiteIntelPanel from '../components/scanner/SiteIntelPanel';
 import type { ScanType, ScanResult } from '../types/scan';
 import { useAuth } from '../hooks/useAuth';
+import { useSiteIntel } from '../hooks/useSiteIntel';
 import { downloadWebReport } from '../pdf/RibbyPDF';
+import { Shield, Zap, Eye, Wrench, Activity, Lock } from 'lucide-react';
 
 interface TestDef {
   type: ScanType;
@@ -67,11 +72,20 @@ const TESTS: TestDef[] = [
 ];
 
 export default function ScanHubPage() {
-  const { state } = useLocation() as { state: { url: string } };
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { orgId } = useParams<{ orgId: string }>();
   const { user } = useAuth();
-  const url = state?.url;
+
+  const urlParam = searchParams.get('url') ?? '';
+  const [inputUrl, setInputUrl] = useState(urlParam);
+  const activeUrl = urlParam || undefined;
+
+  useEffect(() => {
+    setInputUrl(urlParam);
+  }, [urlParam]);
+
+  const { meta, loading: intelLoading, error: intelError, step } = useSiteIntel(activeUrl);
   const [completedScans, setCompletedScans] = useState<Partial<Record<ScanType, ScanResult>>>({});
   const [downloading, setDownloading] = useState(false);
 
@@ -80,23 +94,29 @@ export default function ScanHubPage() {
   };
 
   const handleDownload = async () => {
+    if (!activeUrl) return;
     setDownloading(true);
-    try { await downloadWebReport(url, completedScans, 'Scanner Report'); }
+    try { await downloadWebReport(activeUrl, completedScans, 'Scanner Report'); }
     finally { setDownloading(false); }
   };
 
-  if (!url) {
+  const handleSubmitUrl = (normalized: string) => {
+    setCompletedScans({});
+    setInputUrl(normalized);
+    setSearchParams({ url: normalized });
+  };
+
+  if (!activeUrl) {
     navigate(`/org/${orgId}/scanner`);
     return null;
   }
 
   return (
     <div className="p-4 md:p-6 max-w-4xl mx-auto pb-24 md:pb-6">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="min-w-0 flex-1">
-          <p className="text-xs text-gray-400 mb-0.5">Testing</p>
-          <p className="text-sm font-medium text-gray-800 truncate font-mono">{url}</p>
+      <div className="flex items-center justify-between gap-3 mb-5">
+        <div>
+          <h1 className="text-lg font-semibold text-gray-900">Scanner</h1>
+          <p className="text-sm text-gray-400 mt-0.5">Run each test independently. Results appear inline.</p>
         </div>
         {(() => {
           const done = Object.keys(completedScans).length;
@@ -116,16 +136,37 @@ export default function ScanHubPage() {
       </div>
 
       <div className="mb-5">
-        <h1 className="text-lg font-semibold text-gray-900">Select a test to run</h1>
-        <p className="text-sm text-gray-400 mt-0.5">Run each test independently. Results appear inline no page reload needed.</p>
+        <ScanInput
+          compact
+          value={inputUrl}
+          onChange={setInputUrl}
+          onSubmitUrl={handleSubmitUrl}
+          submitLabel="Scan"
+        />
       </div>
 
-      {/* Test cards grid */}
+      <div className="mb-5">
+        <BrowsingActivity
+          url={activeUrl}
+          step={step}
+          loading={intelLoading}
+          error={intelError}
+          hostname={meta?.hostname}
+          detectedServices={meta?.detectedServices}
+        />
+      </div>
+
+      {meta && !intelLoading && (
+        <div className="mb-6">
+          <SiteIntelPanel meta={meta} />
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {TESTS.map((test, i) => (
           <div key={test.type} className={TESTS.length % 2 !== 0 && i === TESTS.length - 1 ? 'md:col-span-2' : ''}>
             <TestCard
-              url={url}
+              url={activeUrl}
               type={test.type}
               title={test.title}
               description={test.description}

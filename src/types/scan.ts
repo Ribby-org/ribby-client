@@ -21,6 +21,13 @@ export interface ScanMeta {
   contentType?: string;
   isHttps: boolean;
   redirectCount: number;
+  hostname?: string;
+  ipAddress?: string;
+  ipVersion?: 'ipv4' | 'ipv6';
+  hostingProvider?: string;
+  hostingCname?: string;
+  detectedServices?: string[];
+  headerSnapshot?: Record<string, string>;
 }
 
 export interface ScanSummary {

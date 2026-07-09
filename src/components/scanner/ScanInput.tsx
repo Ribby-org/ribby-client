@@ -4,28 +4,53 @@ import { Search, ArrowRight } from 'lucide-react';
 
 const EXAMPLES = ['example.com', 'github.com', 'stripe.com'];
 
-export default function ScanInput() {
-  const [url, setUrl] = useState('');
+interface ScanInputProps {
+  compact?: boolean;
+  value?: string;
+  onChange?: (value: string) => void;
+  onSubmitUrl?: (url: string) => void;
+  submitLabel?: string;
+}
+
+export default function ScanInput({
+  compact = false,
+  value: controlledValue,
+  onChange,
+  onSubmitUrl,
+  submitLabel = 'Continue'
+}: ScanInputProps) {
+  const [internalUrl, setInternalUrl] = useState('');
   const navigate = useNavigate();
   const { orgId } = useParams<{ orgId: string }>();
+
+  const url = controlledValue ?? internalUrl;
+  const setUrl = onChange ?? setInternalUrl;
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!url.trim()) return;
     const normalized = url.trim().startsWith('http') ? url.trim() : 'https://' + url.trim();
-    navigate(`/org/${orgId}/hub`, { state: { url: normalized } });
+
+    if (onSubmitUrl) {
+      onSubmitUrl(normalized);
+      return;
+    }
+
+    navigate(`/org/${orgId}/hub?url=${encodeURIComponent(normalized)}`);
   };
 
   return (
-    <div className="w-full max-w-xl mx-auto px-4 md:px-0">
-      <div className="text-center mb-6">
-        <h1 className="text-xl md:text-2xl font-semibold text-[#ede9ff] mb-2">
-          Scan any web application
-        </h1>
-        <p className="text-sm text-[#6b6880]">
-          Enter a URL to run targeted tests: security, performance, load, accessibility, and more.
-        </p>
-      </div>
+    <div className={`w-full mx-auto ${compact ? '' : 'max-w-xl px-4 md:px-0'}`}>
+      {!compact && (
+        <div className="text-center mb-6">
+          <h1 className="text-xl md:text-2xl font-semibold text-[#ede9ff] mb-2">
+            Scan any web application
+          </h1>
+          <p className="text-sm text-[#6b6880]">
+            Enter a URL to run targeted tests: security, performance, load, accessibility, and more.
+          </p>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
@@ -43,22 +68,25 @@ export default function ScanInput() {
           disabled={!url.trim()}
           className="btn-primary justify-center disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          Continue <ArrowRight size={14} />
+          {submitLabel} <ArrowRight size={14} />
         </button>
       </form>
 
-      <div className="mt-4 flex items-center gap-2 justify-center flex-wrap">
-        <span className="text-xs text-[#4e4b60]">Try:</span>
-        {EXAMPLES.map(ex => (
-          <button
-            key={ex}
-            onClick={() => setUrl('https://' + ex)}
-            className="text-xs text-[#6b6880] hover:text-blue-400 transition-colors duration-150 underline underline-offset-2"
-          >
-            {ex}
-          </button>
-        ))}
-      </div>
+      {!compact && (
+        <div className="mt-4 flex items-center gap-2 justify-center flex-wrap">
+          <span className="text-xs text-[#4e4b60]">Try:</span>
+          {EXAMPLES.map(ex => (
+            <button
+              key={ex}
+              type="button"
+              onClick={() => setUrl('https://' + ex)}
+              className="text-xs text-[#6b6880] hover:text-blue-400 transition-colors duration-150 underline underline-offset-2"
+            >
+              {ex}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

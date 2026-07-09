@@ -20,6 +20,9 @@ export function useOrganization(user: User | null) {
 
   useEffect(() => {
     if (!user) {
+      setOrganizations([]);
+      setCurrent(null);
+      setError('');
       setLoading(false);
       setFetched(true);
       return;

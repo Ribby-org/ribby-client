@@ -50,6 +50,12 @@ export default function App() {
   const { organizations, loading: orgLoading, fetched: orgFetched, refetch } = useOrganization(user);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
+  useEffect(() => {
+    if (!session && window.location.pathname !== '/') {
+      window.history.replaceState({}, '', '/');
+    }
+  }, [session]);
+
   // Hold spinner until auth AND org fetch are fully settled
   if (authLoading || !orgFetched || (session && orgLoading)) return <Spinner />;
 
@@ -73,7 +79,7 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <OAuthReturn />
       <Routes>
         {/* Org picker */}
