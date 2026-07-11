@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import {
   Download, Loader2, ChevronDown, MapPin, Lightbulb,
@@ -175,18 +175,21 @@ export default function ScanHubPage() {
     || (activeUrl && !activeUrl.startsWith('http') && /^@?[a-zA-Z0-9_.-]+(?:\/[a-zA-Z0-9_.-]+)?$/.test(activeUrl.trim()) ? ['', activeUrl.trim()] : null);
   const detectedNpmPackage = npmPackageMatch ? npmPackageMatch[1] : null;
 
+  const isClearingRef = useRef(false);
+
   useEffect(() => {
+    if (isClearingRef.current) {
+      if (urlParam === '') {
+        isClearingRef.current = false;
+      }
+      return;
+    }
     if (urlParam && urlParam !== activeUrl) {
       setActiveUrl(urlParam);
       setInputUrl(urlParam);
       localStorage.setItem(STORAGE_KEY, urlParam);
     }
   }, [urlParam, activeUrl]);
-
-  // Note: we do NOT auto-push activeUrl → searchParams here because
-  // handleSubmitUrl manages that directly; doing it in an effect caused a
-  // race where cancelling (clearing activeUrl) would immediately get
-  // overwritten by this effect before the re-render.
 
   // Reset repo + npm scan when main URL changes
   useEffect(() => {
@@ -245,6 +248,7 @@ export default function ScanHubPage() {
   const handleSubmitUrl = (normalized: string) => {
     if (!normalized) {
       // Cancel / clear — wipe everything and return to home
+      isClearingRef.current = true;
       setActiveUrl('');
       setInputUrl('');
       setCompletedScans({});
@@ -433,11 +437,24 @@ export default function ScanHubPage() {
               <div className="flex flex-wrap gap-3 text-xs" style={{ color: '#86efac' }}>
                 <span><b style={{ color: '#d1fae5' }}>v{npmResult.version}</b></span>
                 {npmResult.license && <span>License: <b style={{ color: '#d1fae5' }}>{npmResult.license}</b></span>}
-                <span>Dependencies: <b style={{ color: '#d1fae5' }}>{npmResult.dependenciesCount}</b></span>
+                <span>Deps: <b style={{ color: '#d1fae5' }}>{npmResult.dependenciesCount}</b></span>
+                {npmResult.weeklyDownloads !== undefined && (
+                  <span>↓ <b style={{ color: '#d1fae5' }}>{npmResult.weeklyDownloads.toLocaleString()}</b>/wk</span>
+                )}
+                {npmResult.maintainerCount !== undefined && (
+                  <span>Maintainers: <b style={{ color: npmResult.maintainerCount === 1 ? '#eab308' : '#d1fae5' }}>{npmResult.maintainerCount}</b></span>
+                )}
+                {npmResult.daysSinceUpdate !== undefined && (
+                  <span style={{ color: npmResult.daysSinceUpdate > 730 ? '#f97316' : '#86efac' }}>
+                    Updated: <b>{npmResult.daysSinceUpdate > 365
+                      ? `${Math.floor(npmResult.daysSinceUpdate / 365)}y ago`
+                      : `${npmResult.daysSinceUpdate}d ago`}</b>
+                  </span>
+                )}
                 {npmResult.githubRepo && (
                   <a href={npmResult.githubRepo} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-1 underline" style={{ color: '#4ade80' }}>
-                    <Github size={11} /> View Source
+                    <Github size={11} /> Source
                   </a>
                 )}
               </div>

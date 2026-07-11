@@ -27,9 +27,12 @@ export default function ScanInput({
   const setUrl = onChange ?? setInternalUrl;
 
   const handleClear = () => {
-    setUrl('');
     if (onSubmitUrl) {
+      // handleSubmitUrl('') clears both activeUrl and inputUrl atomically —
+      // calling setUrl('') here too causes two renders, making cancel need two clicks.
       onSubmitUrl('');
+    } else {
+      setUrl('');
     }
   };
 

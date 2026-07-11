@@ -9,6 +9,9 @@ export interface NpmScanResult {
   githubRepo?: string;
   license?: string;
   dependenciesCount: number;
+  weeklyDownloads?: number;
+  maintainerCount?: number;
+  daysSinceUpdate?: number;
   status: 'scanning' | 'complete' | 'error';
   findings: RepoFinding[];
   summary: {
