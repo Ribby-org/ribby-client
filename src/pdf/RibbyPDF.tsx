@@ -123,6 +123,26 @@ const s = StyleSheet.create({
   sevChip:      { flexDirection: 'row', alignItems: 'center', border: '1px solid #0f172a', paddingHorizontal: 7, paddingVertical: 2.5, backgroundColor: B.white },
   sevDot:       { width: 5, height: 5, marginRight: 4 },
   sevTxt:       { fontSize: 7.5, fontFamily: 'Helvetica-Bold' },
+
+  // ─ Security Headers styles
+  shCard: { border: '1.5px solid #0f172a', marginBottom: 12, overflow: 'hidden' },
+  shSummary: { backgroundColor: '#f8fafc', padding: 12, borderBottom: '1.5px solid #0f172a' },
+  shTitleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  shTitle: { fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#0f172a', textTransform: 'uppercase', letterSpacing: 0.4 },
+  shStatus: { fontSize: 8, fontFamily: 'Helvetica-Bold' },
+  shBarTrack: { width: '100%', height: 6, backgroundColor: '#cbd5e1' },
+  shBarFill: { height: '100%' },
+  shBadges: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, padding: 8, backgroundColor: B.white },
+  shBadge: { flexDirection: 'row', alignItems: 'center', border: '1px solid #0f172a', paddingHorizontal: 6, paddingVertical: 3 },
+  shBadgeTxt: { fontSize: 7, fontFamily: 'Helvetica-Bold' },
+  shBadgeDot: { width: 4, height: 4, marginRight: 3 },
+  
+  missingHeadersSec: { border: '1.5px solid #0f172a', marginBottom: 12 },
+  missingHeadersTitle: { backgroundColor: '#f8fafc', padding: '6 10', borderBottom: '1.5px solid #0f172a' },
+  missingHeaderRow: { flexDirection: 'row', borderBottom: '1px solid #cbd5e1', padding: 8 },
+  missingHeaderRowLast: { flexDirection: 'row', padding: 8 },
+  missingHeaderColLeft: { fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#dc2626', width: 140 },
+  missingHeaderColRight: { fontSize: 7.5, color: B.midGray, flex: 1, lineHeight: 1.4 },
 });
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -169,6 +189,140 @@ function FindingCard({ f }: { f: Finding | RepoFinding }) {
           <Text style={s.fixText}>{f.recommendation}</Text>
         </View>
       </View>
+    </View>
+  );
+}
+
+// ── Security Headers Section ──────────────────────────────────────────────────
+const SECURITY_HEADERS = [
+  {
+    key: 'content-security-policy',
+    label: 'Content-Security-Policy',
+    description: 'Content Security Policy is an effective measure to protect your site from XSS attacks. By whitelisting sources of approved content, you can prevent the browser from loading malicious assets.',
+  },
+  {
+    key: 'x-frame-options',
+    label: 'X-Frame-Options',
+    description: 'X-Frame-Options tells the browser whether you want to allow your site to be framed or not. By preventing a browser from framing your site you can defend against clickjacking attacks. Recommended value "X-Frame-Options: SAMEORIGIN".',
+  },
+  {
+    key: 'x-content-type-options',
+    label: 'X-Content-Type-Options',
+    description: 'X-Content-Type-Options stops a browser from trying to MIME-sniff the content type and forces it to stick with the declared content-type. The only valid value for this header is "X-Content-Type-Options: nosniff".',
+  },
+  {
+    key: 'strict-transport-security',
+    label: 'Strict-Transport-Security',
+    description: 'HTTP Strict Transport Security is an excellent feature to support on your site and strengthens your implementation of TLS by getting the User Agent to enforce the use of HTTPS.',
+  },
+  {
+    key: 'referrer-policy',
+    label: 'Referrer-Policy',
+    description: 'Referrer Policy is a new header that allows a site to control how much information the browser includes with navigations away from a document and should be set by all sites.',
+  },
+  {
+    key: 'permissions-policy',
+    label: 'Permissions-Policy',
+    description: 'Permissions Policy is a new header that allows a site to control which features and APIs can be used in the browser.',
+  },
+];
+
+function SecurityHeadersSection({ meta }: { meta?: ScanMeta | null }) {
+  if (!meta || !meta.headerSnapshot) return null;
+
+  const headersLower = Object.keys(meta.headerSnapshot).reduce<Record<string, string>>((acc, key) => {
+    acc[key.toLowerCase()] = meta.headerSnapshot![key];
+    return acc;
+  }, {});
+
+  const headerStatus = SECURITY_HEADERS.map(h => ({
+    ...h,
+    present: !!headersLower[h.key],
+    value: headersLower[h.key] || null,
+  }));
+
+  const presentCount = headerStatus.filter(h => h.present).length;
+  const missingHeaders = headerStatus.filter(h => !h.present);
+
+  let statusLabel = 'Weak';
+  let statusColor = B.critical;
+  if (presentCount >= 5) {
+    statusLabel = 'Strong';
+    statusColor = B.low;
+  } else if (presentCount >= 4) {
+    statusLabel = 'Good';
+    statusColor = '#34d399';
+  } else if (presentCount >= 3) {
+    statusLabel = 'Moderate';
+    statusColor = B.medium;
+  } else if (presentCount < 1) {
+    statusLabel = 'Failing';
+    statusColor = '#dc2626';
+  }
+
+  const progressWidth = `${Math.max((presentCount / 6) * 100, 6)}%`;
+
+  return (
+    <View style={s.section} wrap={false}>
+      <View style={s.shCard}>
+        <View style={s.shSummary}>
+          <View style={s.shTitleRow}>
+            <Text style={s.shTitle}>Security Headers Strength</Text>
+            <Text style={[s.shStatus, { color: statusColor }]}>
+              {statusLabel} ({presentCount}/6 headers present)
+            </Text>
+          </View>
+          <View style={s.shBarTrack}>
+            <View style={[s.shBarFill, { width: progressWidth, backgroundColor: statusColor }]} />
+          </View>
+        </View>
+
+        <View style={s.shBadges}>
+          {headerStatus.map(h => (
+            <View
+              key={h.key}
+              style={[
+                s.shBadge,
+                h.present
+                  ? { borderColor: 'rgba(22,163,74,0.3)', backgroundColor: 'rgba(22,163,74,0.05)' }
+                  : { borderColor: 'rgba(220,38,38,0.2)', backgroundColor: 'rgba(220,38,38,0.05)' }
+              ]}
+            >
+              <View
+                style={[
+                  s.shBadgeDot,
+                  { backgroundColor: h.present ? B.low : B.critical }
+                ]}
+              />
+              <Text
+                style={[
+                  s.shBadgeTxt,
+                  { color: h.present ? B.low : B.critical }
+                ]}
+              >
+                {h.label}
+              </Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      {missingHeaders.length > 0 && (
+        <View style={s.missingHeadersSec} wrap={false}>
+          <View style={s.missingHeadersTitle}>
+            <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: B.black }}>Missing Headers</Text>
+          </View>
+          {missingHeaders.map((h, i) => (
+            <View
+              key={h.key}
+              style={i === missingHeaders.length - 1 ? s.missingHeaderRowLast : s.missingHeaderRow}
+            >
+              <Text style={s.missingHeaderColLeft}>{h.label}</Text>
+              <Text style={s.missingHeaderColRight}>{h.description}</Text>
+            </View>
+          ))}
+        </View>
+      )}
     </View>
   );
 }
@@ -350,6 +504,9 @@ export function WebScanPDF({ url, scans, reportTitle, meta }: WebScanPDFProps) {
               No data in this report is fabricated or estimated. Findings reflect the state of the application at the exact time the scan was run.
             </Text>
           </View>
+
+          {/* Security Headers Section */}
+          <SecurityHeadersSection meta={meta} />
 
           {/* Site Intel Section (Host metadata, detected services, response headers) */}
           <SiteIntelSection meta={meta} />

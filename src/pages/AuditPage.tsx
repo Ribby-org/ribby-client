@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useParams } from 'react-router-dom';
-import { Search, Globe, Lock, Mail, Link, Download, Loader2 } from 'lucide-react';
+import { Search, Globe, Lock, Mail, Link, Download, Loader2, X } from 'lucide-react';
 import TestCard from '../components/scanner/TestCard';
 import BrowsingActivity from '../components/scanner/BrowsingActivity';
 import SiteIntelPanel from '../components/scanner/SiteIntelPanel';
@@ -62,6 +62,12 @@ export default function AuditPage() {
   const [downloading, setDownloading] = useState(false);
   const { meta, loading: intelLoading, error: intelError, step } = useSiteIntel(submitted || undefined);
 
+  const handleClear = () => {
+    setUrl('');
+    setSubmitted('');
+    setCompletedScans({});
+  };
+
   const handleComplete = (result: ScanResult) => {
     setCompletedScans(prev => ({ ...prev, [result.type]: result }));
   };
@@ -114,8 +120,17 @@ export default function AuditPage() {
             value={url}
             onChange={e => setUrl(e.target.value)}
             placeholder="https://example.com"
-            className="w-full bg-white border border-gray-200 rounded-lg pl-9 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm"
+            className="w-full bg-white border border-gray-200 rounded-lg pl-9 pr-10 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm"
           />
+          {url && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
         <button
           type="submit"
@@ -180,7 +195,7 @@ export default function AuditPage() {
                     <Icon size={16} className={test.iconColor} />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-gray-900">{test.title}</h3>
+                    <h2 className="text-sm font-semibold text-gray-900">{test.title}</h2>
                     <p className="text-xs text-gray-400 mt-1 leading-relaxed">{test.description}</p>
                   </div>
                 </div>

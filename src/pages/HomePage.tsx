@@ -8,7 +8,11 @@ const FEATURES = [
   { title: 'Functional',    desc: 'Broken links, form issues, meta tags, error exposure' }
 ];
 
-export default function HomePage() {
+interface HomePageProps {
+  onSubmitUrl?: (url: string) => void;
+}
+
+export default function HomePage({ onSubmitUrl }: HomePageProps) {
   const [active, setActive] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -31,7 +35,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-full flex flex-col items-center justify-center px-4 py-10 pb-24 md:pb-10">
-      <ScanInput />
+      <ScanInput onSubmitUrl={onSubmitUrl} />
 
       <div className="mt-10 w-full" style={{ maxWidth: '260px' }}>
         {/* Cards — only active one visible, same design as before */}

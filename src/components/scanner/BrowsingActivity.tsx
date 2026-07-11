@@ -27,10 +27,27 @@ function faviconUrl(url: string) {
   }
 }
 
+/** If the URL is a GitHub org/user page, return their avatar URL */
+function githubAvatarUrl(url: string): string | null {
+  try {
+    const { hostname, pathname } = new URL(url);
+    if (!hostname.includes('github.com')) return null;
+    // pathname like /Column-org or /Column-org/Column-apk
+    const parts = pathname.split('/').filter(Boolean);
+    if (parts.length === 0) return null;
+    const org = parts[0];
+    // GitHub's avatar API: github.com/{org}.png?size=64
+    return `https://github.com/${org}.png?size=64`;
+  } catch {
+    return null;
+  }
+}
+
 export default function BrowsingActivity({ url, step, loading, error, hostname, detectedServices }: BrowsingActivityProps) {
   const host = hostname || hostFromUrl(url);
-  const favicon = faviconUrl(url);
-  const [faviconError, setFaviconError] = useState(false);
+  const ghAvatar = githubAvatarUrl(url);
+  const favicon = ghAvatar ?? faviconUrl(url);
+  const [imgError, setImgError] = useState(false);
 
   const steps = [
     { icon: Sparkles, label: `Analyzing ${host}`, minStep: 0 },
@@ -47,16 +64,16 @@ export default function BrowsingActivity({ url, step, loading, error, hostname, 
 
   return (
     <div className="py-1">
-      {/* Favicon + host line */}
+      {/* Favicon / org avatar + host line */}
       <div className="flex items-center gap-2 mb-2.5">
-        {favicon && !faviconError ? (
+        {favicon && !imgError ? (
           <img
             src={favicon}
             alt=""
-            width={14}
-            height={14}
-            className="rounded-sm flex-shrink-0"
-            onError={() => setFaviconError(true)}
+            width={ghAvatar ? 20 : 14}
+            height={ghAvatar ? 20 : 14}
+            className={ghAvatar ? 'rounded-full flex-shrink-0 ring-1 ring-white/10' : 'rounded-sm flex-shrink-0'}
+            onError={() => setImgError(true)}
           />
         ) : (
           <Globe size={14} style={{ color: '#6b6880' }} className="flex-shrink-0" />

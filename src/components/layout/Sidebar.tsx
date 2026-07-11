@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, useNavigate, useParams } from 'react-router-dom';
+import { NavLink, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { History, ScanLine, LogOut, X, ChevronLeft, Building2, Github, ClipboardList, Bug } from 'lucide-react';
 import LegalModal from './LegalModal';
 import { useAuth } from '../../hooks/useAuth';
@@ -14,6 +14,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
   const { organizations } = useOrganization(user);
   const { orgId } = useParams<{ orgId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [legal, setLegal] = useState<'privacy' | 'terms' | null>(null);
   const avatar = user?.user_metadata?.avatar_url as string | undefined;
@@ -22,30 +23,35 @@ export default function Sidebar({ onClose }: SidebarProps) {
   // Repositories are only available in the user's first (primary) organization
   const isFirstOrg = organizations.length > 0 && organizations[0].id === orgId;
 
+  const scannerTo = (() => {
+    const saved = localStorage.getItem(`ribby_scanner_url_${orgId}`);
+    return saved ? `/org/${orgId}/hub?url=${encodeURIComponent(saved)}` : `/org/${orgId}/scanner`;
+  })();
+
   const sections = [
     {
       label: 'Web Scanner',
       items: [
-        { to: `/org/${orgId}/scanner`, icon: ScanLine,      label: 'Scanner' },
-        { to: `/org/${orgId}/audit`,   icon: ClipboardList, label: 'Site Audit' },
+        { to: scannerTo, icon: ScanLine, label: 'Scanner', matchPath: `/org/${orgId}/scanner` },
+        { to: `/org/${orgId}/audit`, icon: ClipboardList, label: 'Site Audit', matchPath: null },
       ]
     },
     ...(isFirstOrg ? [{
       label: 'Code',
       items: [
-        { to: `/org/${orgId}/repo`, icon: Github, label: 'Repositories' }
+        { to: `/org/${orgId}/repo`, icon: Github, label: 'Repositories', matchPath: null }
       ]
     }] : []),
     {
       label: 'QA',
       items: [
-        { to: `/org/${orgId}/bugs`, icon: Bug, label: 'Bug Reports' }
+        { to: `/org/${orgId}/bugs`, icon: Bug, label: 'Bug Reports', matchPath: null }
       ]
     },
     {
       label: 'Reports',
       items: [
-        { to: `/org/${orgId}/history`, icon: History, label: 'History' }
+        { to: `/org/${orgId}/history`, icon: History, label: 'History', matchPath: null }
       ]
     }
   ];
@@ -79,6 +85,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
           </div>
           <button
             onClick={onClose}
+            aria-label="Close sidebar"
             className="md:hidden p-1 rounded-lg transition-colors"
             style={{ color: '#6b6880' }}
           >
@@ -95,25 +102,26 @@ export default function Sidebar({ onClose }: SidebarProps) {
               {section.label}
             </p>
             <div className="space-y-0.5">
-              {section.items.map(({ to, icon: Icon, label }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  onClick={onClose}
-                  className={({ isActive }) =>
-                    `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors duration-150 ${
-                      isActive ? 'text-blue-400 font-medium' : ''
-                    }`
-                  }
-                  style={({ isActive }) => isActive
-                    ? { backgroundColor: 'rgba(124,58,237,0.15)', color: '#a78bfa' }
-                    : { color: '#9390aa' }
-                  }
-                >
-                  <Icon size={15} />
-                  {label}
-                </NavLink>
-              ))}
+              {section.items.map(({ to, icon: Icon, label, matchPath }) => {
+                const isActive = matchPath
+                  ? location.pathname.startsWith(matchPath) || location.pathname.startsWith(`/org/${orgId}/hub`)
+                  : location.pathname === to || location.pathname.startsWith(to.split('?')[0]);
+                return (
+                  <NavLink
+                    key={label}
+                    to={to}
+                    onClick={onClose}
+                    className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors duration-150 ${isActive ? 'text-blue-400 font-medium' : ''}`}
+                    style={isActive
+                      ? { backgroundColor: 'rgba(124,58,237,0.15)', color: '#a78bfa' }
+                      : { color: '#9390aa' }
+                    }
+                  >
+                    <Icon size={15} />
+                    {label}
+                  </NavLink>
+                );
+              })}
             </div>
           </div>
         ))}

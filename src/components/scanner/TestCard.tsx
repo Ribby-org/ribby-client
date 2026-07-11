@@ -119,7 +119,7 @@ export default function TestCard({ url, type, title, description, icon: Icon, ic
             <Icon size={16} className={iconColor} />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-gray-900 leading-snug">{title}</h3>
+            <h2 className="text-sm font-semibold text-gray-900 leading-snug">{title}</h2>
             <p className="text-xs text-gray-400 mt-1 leading-relaxed">{description}</p>
           </div>
         </div>

@@ -11,6 +11,9 @@ export interface Organization {
   updated_at: string;
 }
 
+let cachedOrgs: Organization[] | null = null;
+let activeFetchPromise: Promise<Organization[]> | null = null;
+
 export function useOrganization(user: User | null) {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [current, setCurrent] = useState<Organization | null>(null);
@@ -27,26 +30,63 @@ export function useOrganization(user: User | null) {
       setFetched(true);
       return;
     }
-    // Immediately mark as loading before the async fetch starts
     setLoading(true);
     setFetched(false);
     fetchOrganizations();
-  }, [user?.id]); // stable dependency — only re-run when user ID changes
+  }, [user?.id]);
 
-  const fetchOrganizations = async () => {
-    const { data, error } = await supabase
-      .from('organizations')
-      .select('*')
-      .order('created_at', { ascending: true });
-
-    if (error) {
-      setError(error.message);
-    } else {
-      setOrganizations(data ?? []);
-      setCurrent(data?.[0] ?? null);
+  const fetchOrganizations = async (forceRefetch = false) => {
+    if (forceRefetch) {
+      cachedOrgs = null;
+      activeFetchPromise = null;
     }
-    setLoading(false);
-    setFetched(true);
+
+    if (cachedOrgs) {
+      setOrganizations(cachedOrgs);
+      setCurrent(cachedOrgs[0] ?? null);
+      setLoading(false);
+      setFetched(true);
+      return;
+    }
+
+    if (activeFetchPromise) {
+      try {
+        const data = await activeFetchPromise;
+        setOrganizations(data);
+        setCurrent(data[0] ?? null);
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setLoading(false);
+        setFetched(true);
+      }
+      return;
+    }
+
+    activeFetchPromise = (async () => {
+      const { data, error } = await supabase
+        .from('organizations')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+      cachedOrgs = data ?? [];
+      return cachedOrgs;
+    })();
+
+    try {
+      const data = await activeFetchPromise;
+      setOrganizations(data);
+      setCurrent(data[0] ?? null);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      activeFetchPromise = null;
+      setLoading(false);
+      setFetched(true);
+    }
   };
 
   const createOrganization = async (name: string, description: string) => {
@@ -62,6 +102,9 @@ export function useOrganization(user: User | null) {
     if (error) return { error: error.message };
 
     const org = data as Organization;
+    if (cachedOrgs) {
+      cachedOrgs = [...cachedOrgs, org];
+    }
     setOrganizations(prev => [...prev, org]);
     setCurrent(org);
     return { data: org };
@@ -69,5 +112,14 @@ export function useOrganization(user: User | null) {
 
   const switchOrganization = (org: Organization) => setCurrent(org);
 
-  return { organizations, current, loading, fetched, error, createOrganization, switchOrganization, refetch: fetchOrganizations };
+  return {
+    organizations,
+    current,
+    loading,
+    fetched,
+    error,
+    createOrganization,
+    switchOrganization,
+    refetch: () => fetchOrganizations(true)
+  };
 }

@@ -29,7 +29,7 @@ export default function MobileNav({ onMenuClick }: MobileNavProps) {
       <div className="md:hidden flex items-center justify-between px-4 py-3 flex-shrink-0"
         style={{ backgroundColor: '#1d1a2b', borderBottom: '1px solid #2e2a42' }}>
         <div className="flex items-center gap-3">
-          <button onClick={onMenuClick} className="p-1.5 rounded-lg transition-colors" style={{ color: '#9390aa' }}>
+          <button onClick={onMenuClick} aria-label="Open menu" className="p-1.5 rounded-lg transition-colors" style={{ color: '#9390aa' }}>
             <Menu size={18} />
           </button>
           <span className="font-semibold text-sm truncate max-w-[160px]" style={{ color: '#ede9ff' }}>

@@ -337,7 +337,11 @@ export default function RepoScanPage() {
   const { repos, loading: ghLoading, error: ghError, connected, connectedElsewhereOrgId, fetchRepos, connectGitHub, disconnect } = useGitHubRepos(orgId, user?.id);
   const { scans, fetchScans } = useRepoScans(orgId);
 
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(() => {
+    const query = new URLSearchParams(window.location.search).get('search') || '';
+    const match = query.match(/github\.com\/[^/]+\/([^/\s?#]+)/);
+    return match ? match[1] : query;
+  });
   const [langFilter, setLangFilter] = useState('');
   const [scanningUrl, setScanningUrl] = useState<string | null>(null);
   const [scanError, setScanError] = useState('');

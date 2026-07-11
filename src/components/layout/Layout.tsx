@@ -34,7 +34,7 @@ export default function Layout({ children }: LayoutProps) {
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <MobileNav onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-y-auto">
+        <main role="main" className="flex-1 overflow-y-auto">
           {children}
         </main>
       </div>

@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Search, ArrowRight } from 'lucide-react';
+import { Search, ArrowRight, X } from 'lucide-react';
 
 const EXAMPLES = ['example.com', 'github.com', 'stripe.com'];
 
@@ -25,6 +25,13 @@ export default function ScanInput({
 
   const url = controlledValue ?? internalUrl;
   const setUrl = onChange ?? setInternalUrl;
+
+  const handleClear = () => {
+    setUrl('');
+    if (onSubmitUrl) {
+      onSubmitUrl('');
+    }
+  };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -60,8 +67,17 @@ export default function ScanInput({
             value={url}
             onChange={e => setUrl(e.target.value)}
             placeholder="https://example.com"
-            className="w-full bg-surface border border-border rounded-lg pl-9 pr-4 py-2.5 text-sm text-[#ede9ff] placeholder-[#4e4b60] focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 transition-all duration-150"
+            className="w-full bg-surface border border-border rounded-lg pl-9 pr-10 py-2.5 text-sm text-[#ede9ff] placeholder-[#4e4b60] focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 transition-all duration-150"
           />
+          {url && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b6880] hover:text-white transition-colors p-1"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
         <button
           type="submit"

@@ -51,10 +51,13 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
-    if (!session && window.location.pathname !== '/') {
+    // Only redirect to root if auth has fully settled AND there is definitively no session.
+    // Without the authLoading guard, this fires during the brief moment Supabase is
+    // restoring the session, wiping the current URL before the session is confirmed.
+    if (!authLoading && !session && window.location.pathname !== '/') {
       window.history.replaceState({}, '', '/');
     }
-  }, [session]);
+  }, [authLoading, session]);
 
   // Hold spinner until auth AND org fetch are fully settled
   if (authLoading || !orgFetched || (session && orgLoading)) return <Spinner />;
